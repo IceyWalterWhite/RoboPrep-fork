@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+build
+pnpm-lock.yaml
+coverage
+*.log
+.env*
+!.env.example

@@ -1,0 +1,9 @@
+# Minimal Supabase local-development configuration.
+#
+# Run `supabase start` / `supabase db reset` from the repository root.
+# `supabase/migrations/*.sql` is applied first, then `supabase/seed.sql`.
+
+project_id = "roboprep"
+
+[db]
+seed_sql_paths = ["./seed.sql"]
