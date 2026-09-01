@@ -21,29 +21,29 @@ alter table public.coding_problems
   add column if not exists resource_profile text not null default 'standard_python',
   add column if not exists evaluator_config jsonb;
 
-drop constraint if exists coding_problems_evaluation_mode_check on public.coding_problems;
+alter table public.coding_problems drop constraint if exists coding_problems_evaluation_mode_check;
 alter table public.coding_problems
   add constraint coding_problems_evaluation_mode_check
   check (evaluation_mode in ('program', 'function', 'class'));
 
-drop constraint if exists coding_problems_entrypoint_type_check on public.coding_problems;
+alter table public.coding_problems drop constraint if exists coding_problems_entrypoint_type_check;
 alter table public.coding_problems
   add constraint coding_problems_entrypoint_type_check
   check (entrypoint_type is null or entrypoint_type in ('function', 'class'));
 
-drop constraint if exists coding_problems_framework_check on public.coding_problems;
+alter table public.coding_problems drop constraint if exists coding_problems_framework_check;
 alter table public.coding_problems
   add constraint coding_problems_framework_check
   check (framework is null or framework in ('python', 'numpy', 'pytorch'));
 
-drop constraint if exists coding_problems_resource_profile_check on public.coding_problems;
+alter table public.coding_problems drop constraint if exists coding_problems_resource_profile_check;
 alter table public.coding_problems
   add constraint coding_problems_resource_profile_check
   check (resource_profile in ('standard_python', 'ml_cpu_small', 'ml_cpu_medium'));
 
 -- Function/class problems must declare a matching entrypoint; program problems
 -- must not pretend to have one.
-drop constraint if exists coding_problems_entrypoint_required_check on public.coding_problems;
+alter table public.coding_problems drop constraint if exists coding_problems_entrypoint_required_check;
 alter table public.coding_problems
   add constraint coding_problems_entrypoint_required_check
   check (
@@ -67,12 +67,12 @@ alter table public.coding_test_cases
   add column if not exists expected_json jsonb,
   add column if not exists metadata jsonb;
 
-drop constraint if exists coding_test_cases_test_type_check on public.coding_test_cases;
+alter table public.coding_test_cases drop constraint if exists coding_test_cases_test_type_check;
 alter table public.coding_test_cases
   add constraint coding_test_cases_test_type_check
   check (test_type is null or test_type in ('example', 'value', 'shape', 'dtype', 'gradient', 'exception', 'performance'));
 
-drop constraint if exists coding_test_cases_test_group_check on public.coding_test_cases;
+alter table public.coding_test_cases drop constraint if exists coding_test_cases_test_group_check;
 alter table public.coding_test_cases
   add constraint coding_test_cases_test_group_check
   check (test_group is null or test_group in ('basic', 'edge', 'numerical', 'shape', 'gradient', 'performance'));

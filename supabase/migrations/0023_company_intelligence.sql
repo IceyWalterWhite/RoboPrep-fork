@@ -163,6 +163,16 @@ begin
     select coalesce(array_agg(id), '{}') into v_company_ids from companies;
   end if;
 
+  -- Shared published-interview base: a temp table (not a CTE) so every
+  -- statement below can reference it. Replaced on each call.
+  drop table if exists _company_base;
+  create temp table _company_base as
+    select i.id, i.company_id, i.position_id, i.year, i.season,
+           i.difficulty_overall, i.published_at,
+           case when lower(i.season) = 'fall' then 'autumn' else lower(i.season) end as season_norm
+    from interviews i
+    where i.company_id = any(v_company_ids) and i.status = 'published';
+
   -- Replace (not merge) rows for the target companies so re-running produces
   -- exactly the recomputed set (idempotency, Task 12).
   delete from company_stats where company_id = any(v_company_ids);
@@ -174,13 +184,6 @@ begin
   delete from company_difficulty_stats where company_id = any(v_company_ids);
   delete from company_round_type_stats where company_id = any(v_company_ids);
 
-  with base as (
-    select i.id, i.company_id, i.position_id, i.year, i.season,
-           i.difficulty_overall, i.published_at,
-           case when lower(i.season) = 'fall' then 'autumn' else lower(i.season) end as season_norm
-    from interviews i
-    where i.company_id = any(v_company_ids) and i.status = 'published'
-  )
   -- Task 2: company summary.
   insert into company_stats (
     company_id, published_interview_count, position_count,
@@ -190,17 +193,17 @@ begin
   )
   select
     c.id,
-    (select count(*) from base b where b.company_id = c.id),
+    (select count(*) from _company_base b where b.company_id = c.id),
     (select count(*) from positions p where p.company_id = c.id),
-    (select count(*) from interview_questions iq join base b on b.id = iq.interview_id
+    (select count(*) from interview_questions iq join _company_base b on b.id = iq.interview_id
       where b.company_id = c.id and iq.question_id is not null),
-    (select count(*) from interview_questions iq join base b on b.id = iq.interview_id
+    (select count(*) from interview_questions iq join _company_base b on b.id = iq.interview_id
       where b.company_id = c.id and iq.coding_problem_id is not null),
-    (select count(distinct iq.question_id) from interview_questions iq join base b on b.id = iq.interview_id
+    (select count(distinct iq.question_id) from interview_questions iq join _company_base b on b.id = iq.interview_id
       where b.company_id = c.id and iq.question_id is not null),
-    (select count(distinct iq.coding_problem_id) from interview_questions iq join base b on b.id = iq.interview_id
+    (select count(distinct iq.coding_problem_id) from interview_questions iq join _company_base b on b.id = iq.interview_id
       where b.company_id = c.id and iq.coding_problem_id is not null),
-    (select max(b.published_at) from base b where b.company_id = c.id),
+    (select max(b.published_at) from _company_base b where b.company_id = c.id),
     now()
   from companies c
   where c.id = any(v_company_ids);
@@ -213,14 +216,14 @@ begin
   select
     b.company_id, b.position_id,
     count(distinct b.id),
-    (select count(*) from interview_questions iq join base b2 on b2.id = iq.interview_id
+    (select count(*) from interview_questions iq join _company_base b2 on b2.id = iq.interview_id
       where b2.company_id = b.company_id and b2.position_id is not distinct from b.position_id
         and iq.question_id is not null),
-    (select count(*) from interview_questions iq join base b2 on b2.id = iq.interview_id
+    (select count(*) from interview_questions iq join _company_base b2 on b2.id = iq.interview_id
       where b2.company_id = b.company_id and b2.position_id is not distinct from b.position_id
         and iq.coding_problem_id is not null),
     max(b.published_at), now()
-  from base b
+  from _company_base b
   where b.position_id is not null
   group by b.company_id, b.position_id;
 
@@ -247,7 +250,7 @@ begin
       count(*) filter (where b.published_at >= now() - interval '90 days') as occurrences_90d,
       count(distinct b.id) filter (where b.published_at >= now() - interval '90 days') as interviews_90d,
       max(b.published_at) as last_seen_at
-    from base b
+    from _company_base b
     join interview_questions iq on iq.interview_id = b.id and iq.question_id is not null
     join question_topics qt on qt.question_id = iq.question_id
     group by b.company_id, qt.topic_id
@@ -276,8 +279,9 @@ begin
       count(distinct b.position_id) as positions,
       count(*) filter (where b.published_at >= now() - interval '30 days') as occurrences_30d,
       count(*) filter (where b.published_at >= now() - interval '90 days') as occurrences_90d,
+      count(distinct b.id) filter (where b.published_at >= now() - interval '90 days') as interviews_90d,
       max(b.published_at) as last_seen_at
-    from base b
+    from _company_base b
     join interview_questions iq on iq.interview_id = b.id and iq.question_id is not null
     group by b.company_id, iq.question_id
   ) gr;
@@ -304,7 +308,7 @@ begin
       count(*) filter (where b.published_at >= now() - interval '90 days') as occurrences_90d,
       count(distinct b.id) filter (where b.published_at >= now() - interval '90 days') as interviews_90d,
       max(b.published_at) as last_seen_at
-    from base b
+    from _company_base b
     join interview_questions iq on iq.interview_id = b.id and iq.coding_problem_id is not null
     group by b.company_id, iq.coding_problem_id
   ) gr;
@@ -321,11 +325,11 @@ begin
     count(iq),
     count(iq) filter (where iq.question_id is not null),
     count(iq) filter (where iq.coding_problem_id is not null),
-    round((count(iq) filter (where iq.coding_problem_id is not null))::numeric / nullif(count(iq), 0), 4),
+    coalesce(round((count(iq) filter (where iq.coding_problem_id is not null))::numeric / nullif(count(iq), 0), 4), 0),
     round(avg(sr.round_count)::numeric, 2),
     round(avg(sr.question_count)::numeric, 2),
     now()
-  from base b
+  from _company_base b
   left join interview_questions iq on iq.interview_id = b.id
   left join lateral (
     select
@@ -354,7 +358,7 @@ begin
       end)::numeric, 2),
     count(*) filter (where b.difficulty_overall in ('easy', 'medium', 'hard')),
     now()
-  from base b
+  from _company_base b
   group by b.company_id;
 
   -- Task 9: round-type distribution.
@@ -372,7 +376,7 @@ begin
       count(*) as rounds,
       count(distinct b.id) as interviews,
       sum(count(*)) over (partition by b.company_id) as total_rounds
-    from base b
+    from _company_base b
     join interview_rounds ir on ir.interview_id = b.id
     group by b.company_id, ir.round_type
   ) gr;

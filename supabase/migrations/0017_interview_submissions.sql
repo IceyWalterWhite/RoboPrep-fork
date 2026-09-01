@@ -52,7 +52,8 @@ begin
   ) then
     -- Server-side size guard (Task 53); the application enforces friendlier
     -- limits, the database enforces the pathological floor/ceiling.
-    add constraint interview_submissions_raw_text_check
+    alter table public.interview_submissions
+      add constraint interview_submissions_raw_text_check
       check (char_length(raw_text) between 1 and 200000);
   end if;
   if not exists (

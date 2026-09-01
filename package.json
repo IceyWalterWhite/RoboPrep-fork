@@ -17,7 +17,7 @@
     "check:ingestion": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/check-ingestion-integrity.ts",
     "test:ingestion": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/test-ingestion-pipeline.ts",
     "test:live-parser": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/test-live-parser.ts",
-    "check:companies": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/check-company-integrity.ts",
+    "check:companies": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/check-company-intelligence.ts",
     "test:companies": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/test-company-intelligence.ts",
     "refresh:companies": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/refresh-company-stats.ts",
     "recover:jobs": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/recover-stuck-jobs.ts",
