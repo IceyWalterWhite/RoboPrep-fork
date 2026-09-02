@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import type { EvaluatorInputValue, StructuredValue, TensorDtype, TensorSpec } from "@/types/ml-judge";
+import type {
+  EvaluatorInputValue,
+  StructuredValue,
+  TensorDtype,
+  TensorSpec,
+} from "@/types/ml-judge";
 
 /**
  * Deterministic structured-input serialization (Week 5 Task 9).
@@ -40,10 +45,20 @@ export const evaluatorInputSchema: z.ZodType<EvaluatorInputValue> = z.union([
 ]) as z.ZodType<EvaluatorInputValue>;
 
 export function isTensorSpec(value: EvaluatorInputValue): value is TensorSpec {
-  return typeof value === "object" && value !== null && !Array.isArray(value) && (value as { type?: unknown }).type === "tensor";
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    (value as { type?: unknown }).type === "tensor"
+  );
 }
 
-const dtypeSizes: Record<TensorDtype, number> = { float32: 4, float64: 8, int64: 8, bool: 1 };
+const dtypeSizes: Record<TensorDtype, number> = {
+  float32: 4,
+  float64: 8,
+  int64: 8,
+  bool: 1,
+};
 
 /** Expected element count of a tensor spec; null when the shape is inconsistent. */
 export function tensorElementCount(spec: TensorSpec): number | null {
@@ -64,11 +79,13 @@ export function tensorByteLength(spec: TensorSpec): number {
  * Values pass through as JSON; tensor specs are normalized (values array
  * length is verified against shape so the runner can trust it).
  */
-export function serializeEvaluatorInput(value: EvaluatorInputValue): EvaluatorInputValue {
+export function serializeEvaluatorInput(
+  value: EvaluatorInputValue,
+): EvaluatorInputValue {
   if (!isTensorSpec(value)) return value;
   const count = tensorElementCount(value);
   if (count === null || count > value.values.length) {
-    throw new Error("Tensor spec values do not fill the declared shape.");
+    throw new Error("Tensor 的 values 数量与声明的形状不匹配。");
   }
   return value;
 }
@@ -80,7 +97,10 @@ export function serializeStructuredTestCase(caseInput: {
   return {
     args: caseInput.args.map(serializeEvaluatorInput),
     kwargs: Object.fromEntries(
-      Object.entries(caseInput.kwargs).map(([key, value]) => [key, serializeEvaluatorInput(value)]),
+      Object.entries(caseInput.kwargs).map(([key, value]) => [
+        key,
+        serializeEvaluatorInput(value),
+      ]),
     ),
   };
 }

@@ -12,7 +12,10 @@ import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import type { CodingProblemDetail } from "@/types/coding";
-import { CODING_DIFFICULTY_LABELS } from "@/lib/coding/constants";
+import {
+  CODING_CATEGORY_LABELS,
+  CODING_DIFFICULTY_LABELS,
+} from "@/lib/coding/constants";
 import { getCodingProblemBySlug, getUserSubmissions } from "@/lib/coding/queries";
 
 export async function generateMetadata({
@@ -24,7 +27,7 @@ export async function generateMetadata({
   const problem = await getCodingProblemBySlug(slug);
   return problem
     ? { title: problem.title, description: problem.description.slice(0, 160) }
-    : { title: "Coding problem" };
+    : { title: "Coding 题目" };
 }
 
 export default async function CodingProblemPage({
@@ -48,7 +51,10 @@ export default async function CodingProblemPage({
             {CODING_DIFFICULTY_LABELS[problem.difficulty]}
           </Badge>
           {problem.category ? (
-            <Badge variant="default">{formatLabel(problem.category)}</Badge>
+            <Badge variant="default">
+              {CODING_CATEGORY_LABELS[problem.category] ??
+                formatLabel(problem.category)}
+            </Badge>
           ) : null}
           {problem.topics.slice(0, 4).map((topic) => (
             <Link
@@ -79,7 +85,7 @@ export default async function CodingProblemPage({
             className="text-ink-secondary hover:text-ink inline-flex items-center gap-1 text-sm font-medium"
           >
             <ChevronLeft className="size-4" aria-hidden />
-            Back to all problems
+            返回全部题目
           </Link>
         </div>
         <div className="flex flex-col gap-6 lg:sticky lg:top-20">
@@ -97,18 +103,30 @@ export default async function CodingProblemPage({
 
 /** Entrypoint-aware headline for function/class problems (Week 5 Task 20). */
 function problemHeadline(problem: CodingProblemDetail): string {
-  if (problem.evaluation.evaluationMode === "class" && problem.evaluation.entrypointName) {
-    return `Implement the ${problem.evaluation.entrypointName} class with the signature in the starter code.`;
+  if (
+    problem.evaluation.evaluationMode === "class" &&
+    problem.evaluation.entrypointName
+  ) {
+    return `请按照初始代码中的签名实现 ${problem.evaluation.entrypointName} 类。`;
   }
   if (problem.evaluation.entrypointName) {
-    return `Implement ${problem.evaluation.entrypointName}() as described below.`;
+    return `请按照下方说明实现 ${problem.evaluation.entrypointName}()。`;
   }
   if (problem.functionName) {
-    return `Implement ${problem.functionName} using the input/output format below.`;
+    return `请按照下方输入/输出格式实现 ${problem.functionName}。`;
   }
-  return "Write a Python program that follows the input/output format below.";
+  return "请编写一个符合下方输入/输出格式的 Python 程序。";
 }
 
 function formatLabel(value: string): string {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const labels: Record<string, string> = {
+    robot_learning: "机器人学习",
+    software_engineering: "软件工程",
+    machine_learning: "机器学习",
+    transformer: "Transformer",
+    diffusion: "Diffusion",
+    robotics: "机器人学",
+    algorithms: "算法",
+  };
+  return labels[value.toLowerCase()] ?? "其他";
 }

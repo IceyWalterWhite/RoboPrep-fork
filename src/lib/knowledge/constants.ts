@@ -25,31 +25,31 @@ export const KNOWLEDGE_SORTS: readonly KnowledgeSort[] = [
 ];
 
 export const KNOWLEDGE_SORT_LABELS: Record<KnowledgeSort, string> = {
-  recommended: "Recommended",
-  most_asked: "Most asked",
-  trending: "Trending",
-  newest: "Newest",
+  recommended: "推荐",
+  most_asked: "最常提问",
+  trending: "趋势",
+  newest: "最新",
 };
 
 export const DIFFICULTY_LABELS = {
-  easy: "Easy",
-  medium: "Medium",
-  hard: "Hard",
+  easy: "简单",
+  medium: "中等",
+  hard: "困难",
 } as const;
 
 export const QUESTION_TYPE_LABELS = {
-  knowledge: "Knowledge",
+  knowledge: "知识",
   coding: "Coding",
-  system_design: "System Design",
-  research: "Research",
-  behavioral: "Behavioral",
+  system_design: "系统设计",
+  research: "研究",
+  behavioral: "行为",
 } as const;
 
 export const RELATION_GROUP_LABELS = {
-  prerequisite: "Prerequisites",
-  related: "Related",
-  contrast: "Compare with",
-  follow_up: "Interviewer may continue asking",
+  prerequisite: "前置知识",
+  related: "相关问题",
+  contrast: "对比问题",
+  follow_up: "面试官可能继续追问",
 } as const;
 
 /** Max rows shown in "Seen in interviews" before truncation. */

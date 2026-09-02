@@ -7,19 +7,22 @@ import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { companyFiltersToQueryString, parseCompanyFilters } from "@/lib/companies/filters";
+import {
+  companyFiltersToQueryString,
+  parseCompanyFilters,
+} from "@/lib/companies/filters";
 import { getCompanyDirectory } from "@/lib/companies/queries";
 
 export const metadata: Metadata = {
-  title: "Embodied AI Interview Companies — RoboPrep",
-  description: "Browse companies hiring for Embodied AI roles and see what their published interview records cover.",
+  title: "具身智能面试公司 — RoboPrep",
+  description: "浏览招聘具身智能岗位的公司，了解其已发布面试记录覆盖的内容。",
 };
 
 const DIRECTORY_FILTERS = [
-  { key: "", label: "All" },
-  { key: "has_interviews", label: "Has interviews" },
-  { key: "has_coding", label: "Has coding evidence" },
-  { key: "recent", label: "Recently active" },
+  { key: "", label: "全部" },
+  { key: "has_interviews", label: "有面试记录" },
+  { key: "has_coding", label: "有 Coding 记录" },
+  { key: "recent", label: "近期活跃" },
 ] as const;
 
 /**
@@ -44,16 +47,29 @@ export default async function CompaniesPage({
   return (
     <Container className="py-14">
       <PageHeader
-        title="Companies"
-        description="Prepare for Embodied AI interviews company by company, based on published interview records."
+        title="公司"
+        description="根据已发布的面试记录，逐家公司准备具身智能面试。"
       >
-        <form action="/companies" method="get" role="search" className="w-full max-w-sm">
+        <form
+          action="/companies"
+          method="get"
+          role="search"
+          className="w-full max-w-sm"
+        >
           {params.filter && <input type="hidden" name="filter" value={params.filter} />}
-          <Input name="q" defaultValue={params.q ?? ""} placeholder="Search companies…" aria-label="Search companies" />
+          <Input
+            name="q"
+            defaultValue={params.q ?? ""}
+            placeholder="搜索公司…"
+            aria-label="搜索公司"
+          />
         </form>
       </PageHeader>
 
-      <nav className="border-line-subtle mt-6 flex flex-wrap gap-2 border-b pb-3" aria-label="Directory filters">
+      <nav
+        className="border-line-subtle mt-6 flex flex-wrap gap-2 border-b pb-3"
+        aria-label="公司目录筛选"
+      >
         {DIRECTORY_FILTERS.map((filter) => {
           const active = (params.filter ?? "") === filter.key;
           const href = filter.key
@@ -64,7 +80,9 @@ export default async function CompaniesPage({
               key={filter.key || "all"}
               href={href}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
-                active ? "bg-accent text-white" : "text-ink-secondary hover:bg-surface-sunken hover:text-ink"
+                active
+                  ? "bg-accent text-white"
+                  : "text-ink-secondary hover:bg-surface-sunken hover:text-ink"
               }`}
             >
               {filter.label}
@@ -77,8 +95,12 @@ export default async function CompaniesPage({
         <EmptyState
           icon={Building2}
           className="mt-10"
-          title={params.q ? `No companies match “${params.q}”` : "No companies yet"}
-          description={params.q ? "Try a different name or clear the search." : "Run `supabase db reset` to load the development seed."}
+          title={params.q ? `没有匹配“${params.q}”的公司` : "暂时还没有公司"}
+          description={
+            params.q
+              ? "请尝试其他名称，或清除搜索条件。"
+              : "运行 `supabase db reset` 以加载开发示例数据。"
+          }
         />
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

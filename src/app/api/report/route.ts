@@ -6,8 +6,20 @@ import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
-const ENTITY_TYPES = ["interview", "question", "coding_problem", "company", "other"] as const;
-const REASONS = ["inaccuracy", "privacy", "duplicate", "inappropriate", "other"] as const;
+const ENTITY_TYPES = [
+  "interview",
+  "question",
+  "coding_problem",
+  "company",
+  "other",
+] as const;
+const REASONS = [
+  "inaccuracy",
+  "privacy",
+  "duplicate",
+  "inappropriate",
+  "other",
+] as const;
 
 /**
  * Week 8 Task 94: report content intake. Structured reasons, rate limited,
@@ -21,7 +33,7 @@ export async function POST(request: Request): Promise<Response> {
   const rate = checkRateLimit(`report:${user?.id ?? requestId}`, 10, 3_600_000);
   if (!rate.allowed) {
     return Response.json(
-      { error: "Too many reports. Please try again later." },
+      { error: "举报次数过多，请稍后再试。" },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }
@@ -30,23 +42,26 @@ export async function POST(request: Request): Promise<Response> {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
+    return Response.json({ error: "请求无效。" }, { status: 400 });
   }
 
-  const { entityType, entityId, reason, details } = (body ?? {}) as Record<string, string | undefined>;
+  const { entityType, entityId, reason, details } = (body ?? {}) as Record<
+    string,
+    string | undefined
+  >;
   if (!entityType || !(ENTITY_TYPES as readonly string[]).includes(entityType)) {
-    return Response.json({ error: "Invalid content type." }, { status: 400 });
+    return Response.json({ error: "内容类型无效。" }, { status: 400 });
   }
   if (!entityId || !/^[0-9a-f-]{36}$/i.test(entityId)) {
-    return Response.json({ error: "Invalid content reference." }, { status: 400 });
+    return Response.json({ error: "内容引用无效。" }, { status: 400 });
   }
   if (!reason || !(REASONS as readonly string[]).includes(reason)) {
-    return Response.json({ error: "Choose a reason." }, { status: 400 });
+    return Response.json({ error: "请选择举报原因。" }, { status: 400 });
   }
 
   const admin = createAdminClient();
   if (!admin) {
-    return Response.json({ error: "Reporting is temporarily unavailable." }, { status: 503 });
+    return Response.json({ error: "举报功能暂时不可用。" }, { status: 503 });
   }
 
   const { error } = await admin.from("content_reports").insert({
@@ -58,9 +73,14 @@ export async function POST(request: Request): Promise<Response> {
   });
   if (error) {
     logger.warnFrom("report_insert_failed", error, { requestId, route: "/api/report" });
-    return Response.json({ error: "Could not save the report. Please try again." }, { status: 503 });
+    return Response.json({ error: "无法保存举报，请稍后再试。" }, { status: 503 });
   }
 
-  logger.info("report_received", { requestId, route: "/api/report", entityType, reason });
+  logger.info("report_received", {
+    requestId,
+    route: "/api/report",
+    entityType,
+    reason,
+  });
   return Response.json({ ok: true }, { status: 201 });
 }

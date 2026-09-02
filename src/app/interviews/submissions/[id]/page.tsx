@@ -11,8 +11,8 @@ import { Card } from "@/components/ui/card";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = {
-  title: "Submission status",
-  description: "Status of your interview submission.",
+  title: "投稿状态",
+  description: "查看你的面试投稿状态。",
 };
 
 /**
@@ -42,43 +42,60 @@ export default async function SubmissionStatusPage({
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
         <header className="flex flex-col gap-2">
           <h1 className="text-title text-ink font-semibold tracking-[-0.02em]">
-            {submission.status === "submitted" ? "Submission received" : "Your submission"}
+            {submission.status === "submitted" ? "已收到投稿" : "你的投稿"}
           </h1>
           <p className="text-ink-secondary text-sm leading-relaxed">
-            Thank you for contributing to RoboPrep. Every submission is reviewed by a
-            human before anything is published.
+            感谢你为 RoboPrep 贡献内容。所有投稿都会经过人工审核后再发布。
           </p>
         </header>
 
         <Card className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-ink-tertiary text-xs tracking-wide uppercase">Status</p>
+              <p className="text-ink-tertiary text-xs tracking-wide uppercase">状态</p>
               <p className="text-ink mt-1 text-lg font-semibold">{status.label}</p>
             </div>
             <Badge
               variant="status"
-              tone={status.tone === "success" ? "published" : status.tone === "attention" ? "rejected" : undefined}
+              tone={
+                status.tone === "success"
+                  ? "published"
+                  : status.tone === "attention"
+                    ? "rejected"
+                    : undefined
+              }
             >
               {status.label}
             </Badge>
           </div>
-          <p className="text-ink-secondary mt-3 text-sm leading-relaxed">{status.description}</p>
+          <p className="text-ink-secondary mt-3 text-sm leading-relaxed">
+            {status.description}
+          </p>
           <dl className="border-line-subtle mt-5 grid gap-3 border-t pt-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">Submitted at</dt>
-              <dd className="text-ink mt-0.5">{new Date(submission.createdAt).toLocaleString()}</dd>
+              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">
+                提交时间
+              </dt>
+              <dd className="text-ink mt-0.5">
+                {new Date(submission.createdAt).toLocaleString()}
+              </dd>
             </div>
             <div>
-              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">Company hint</dt>
+              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">
+                公司提示
+              </dt>
               <dd className="text-ink mt-0.5">{submission.companyHint ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">Position hint</dt>
+              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">
+                岗位提示
+              </dt>
               <dd className="text-ink mt-0.5">{submission.positionHint ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">Year</dt>
+              <dt className="text-ink-tertiary text-xs tracking-wide uppercase">
+                年份
+              </dt>
               <dd className="text-ink mt-0.5">{submission.yearHint ?? "—"}</dd>
             </div>
           </dl>
@@ -88,21 +105,24 @@ export default async function SubmissionStatusPage({
           <Card className="p-6">
             <p className="text-ink text-sm font-medium">
               {submission.status === "rejected"
-                ? "This submission was not published after review."
-                : "Automatic processing could not complete this submission."}
+                ? "这条投稿未通过审核并发布。"
+                : "自动处理未能完成这条投稿。"}
             </p>
             <p className="text-ink-secondary mt-1 text-sm leading-relaxed">
               {submission.status === "rejected"
-                ? "You are welcome to submit a more detailed experience — anything with specific questions and round structure helps other candidates most."
-                : "Our team has been notified and will take a look. No action is needed from you."}
+                ? "欢迎你补充提交更详细的经历——具体的问题和轮次结构最能帮助其他候选人。"
+                : "团队已经收到通知并会进行查看，你暂时无需采取任何操作。"}
             </p>
           </Card>
         )}
 
         <p className="text-ink-tertiary text-sm">
-          Looking for interviews to study?{" "}
-          <Link href="/interviews" className="text-accent hover:text-accent-hover font-medium">
-            Browse published interviews
+          想找面试来学习？{" "}
+          <Link
+            href="/interviews"
+            className="text-accent hover:text-accent-hover font-medium"
+          >
+            浏览已发布的面试
           </Link>
         </p>
       </div>

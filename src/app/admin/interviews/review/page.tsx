@@ -11,18 +11,23 @@ import { confidenceBand } from "@/lib/ingestion/confidence";
 import { listDrafts, listSubmissions } from "@/lib/ingestion/queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { InterviewDraft } from "@/types/ingestion";
+import { displayModerationFlagType } from "@/lib/ingestion/display";
 
 export const metadata: Metadata = {
-  title: "Interview review queue",
+  title: "面试审核队列",
   robots: { index: false, follow: false },
 };
 
 const QUEUE_FILTERS = [
-  { key: "open", label: "Open", statuses: ["submitted", "parsed", "needs_review", "approved"] },
-  { key: "in_review", label: "In review", statuses: ["needs_review"] },
-  { key: "failed", label: "Failed", statuses: ["failed"] },
-  { key: "published", label: "Published", statuses: ["published"] },
-  { key: "rejected", label: "Rejected", statuses: ["rejected"] },
+  {
+    key: "open",
+    label: "待处理",
+    statuses: ["submitted", "parsed", "needs_review", "approved"],
+  },
+  { key: "in_review", label: "审核中", statuses: ["needs_review"] },
+  { key: "failed", label: "失败", statuses: ["failed"] },
+  { key: "published", label: "已发布", statuses: ["published"] },
+  { key: "rejected", label: "已拒绝", statuses: ["rejected"] },
 ] as const;
 
 /** Deterministic queue priority (Task 74); computed outside render. */
@@ -40,14 +45,20 @@ function priorityFor(
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  submitted: "Submitted",
-  processing: "Processing",
-  parsed: "Parsed",
-  needs_review: "Needs review",
-  approved: "Approved",
-  rejected: "Rejected",
-  failed: "Failed",
-  published: "Published",
+  submitted: "已接收",
+  processing: "处理中",
+  parsed: "已解析",
+  needs_review: "待审核",
+  approved: "已批准",
+  rejected: "已拒绝",
+  failed: "失败",
+  published: "已发布",
+};
+
+const CONFIDENCE_LABELS: Record<string, string> = {
+  high: "高",
+  medium: "中",
+  low: "低",
 };
 
 /**
@@ -61,13 +72,17 @@ export default async function ReviewQueuePage({
 }) {
   const { filter = "open", page = "1" } = await searchParams;
   const pageNumber = Math.max(1, Number(page) || 1);
-  const activeFilter = QUEUE_FILTERS.find((entry) => entry.key === filter) ?? QUEUE_FILTERS[0];
+  const activeFilter =
+    QUEUE_FILTERS.find((entry) => entry.key === filter) ?? QUEUE_FILTERS[0];
 
   const admin = createAdminClient();
   if (!admin) {
     return (
       <Container className="py-14">
-        <EmptyState title="Ingestion service not configured" description="Set SUPABASE_SERVICE_ROLE_KEY to use the review queue." />
+        <EmptyState
+          title="数据导入服务未配置"
+          description="请设置 SUPABASE_SERVICE_ROLE_KEY 后使用审核队列。"
+        />
       </Container>
     );
   }
@@ -100,11 +115,14 @@ export default async function ReviewQueuePage({
   return (
     <Container className="py-10">
       <PageHeader
-        title="Interview review"
-        description="Submissions waiting for review. Automation suggests; you decide."
+        title="面试审核"
+        description="以下投稿正在等待审核。自动化负责提供建议，最终由你决定。"
       />
 
-      <nav className="border-line-subtle mt-6 flex flex-wrap gap-2 border-b pb-3" aria-label="Queue filters">
+      <nav
+        className="border-line-subtle mt-6 flex flex-wrap gap-2 border-b pb-3"
+        aria-label="队列筛选"
+      >
         {QUEUE_FILTERS.map((entry) => (
           <Link
             key={entry.key}
@@ -121,7 +139,11 @@ export default async function ReviewQueuePage({
       </nav>
 
       {rows.length === 0 ? (
-        <EmptyState className="mt-10" title="Queue is clear" description={`No submissions with status "${activeFilter.label}".`} />
+        <EmptyState
+          className="mt-10"
+          title="队列已清空"
+          description={`没有状态为“${activeFilter.label}”的投稿。`}
+        />
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
           {rows.map(({ submission, draft, priority }) => {
@@ -132,47 +154,64 @@ export default async function ReviewQueuePage({
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-ink font-medium">{submission.companyHint ?? draft?.companyName ?? "Unknown company"}</span>
+                        <span className="text-ink font-medium">
+                          {submission.companyHint ?? draft?.companyName ?? "未知公司"}
+                        </span>
                         <span className="text-ink-tertiary">·</span>
                         <span className="text-ink-secondary truncate text-sm">
-                          {submission.positionHint ?? draft?.positionTitle ?? "Unknown position"}
+                          {submission.positionHint ??
+                            draft?.positionTitle ??
+                            "未知岗位"}
                         </span>
                       </div>
                       <p className="text-ink-tertiary mt-1 text-xs">
-                        {new Date(submission.createdAt).toLocaleString()} · {submission.rawText.length.toLocaleString()} chars
-                        {draft ? ` · parser ${draft.parserVersion} (${draft.provider})` : " · not parsed"}
+                        {new Date(submission.createdAt).toLocaleString()} ·{" "}
+                        {submission.rawText.length.toLocaleString()} 字符
+                        {draft
+                          ? ` · 解析器 ${draft.parserVersion}（${draft.provider}）`
+                          : " · 尚未解析"}
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge
                         variant="status"
                         tone={
-                          submission.status === "failed" || submission.status === "rejected"
+                          submission.status === "failed" ||
+                          submission.status === "rejected"
                             ? "rejected"
                             : submission.status === "published"
                               ? "published"
                               : undefined
                         }
                       >
-                        {STATUS_LABELS[submission.status] ?? submission.status}
+                        {STATUS_LABELS[submission.status] ?? "未知状态"}
                       </Badge>
                       {draft && (
                         <span className="text-ink-tertiary text-xs tabular-nums">
-                          confidence {draft.confidence.toFixed(2)} ({band})
+                          置信度 {draft.confidence.toFixed(2)}（
+                          {CONFIDENCE_LABELS[band] ?? "未知"}）
                         </span>
                       )}
-                      <span className="text-ink-tertiary text-xs tabular-nums">P{priority.toFixed(2)}</span>
+                      <span className="text-ink-tertiary text-xs tabular-nums">
+                        P{priority.toFixed(2)}
+                      </span>
                       <Link
                         href={`/admin/interviews/review/${submission.id}`}
                         className="text-accent hover:text-accent-hover text-sm font-medium"
                       >
-                        Review →
+                        审核 →
                       </Link>
                     </div>
                   </div>
                   {submission.moderationFlags.length > 0 && (
                     <p className="text-warning mt-2 text-xs">
-                      Moderation flags: {submission.moderationFlags.map((flag) => `${flag.type}×${flag.count}`).join(", ")}
+                      内容审核标记：
+                      {submission.moderationFlags
+                        .map(
+                          (flag) =>
+                            `${displayModerationFlagType(flag.type)}×${flag.count}`,
+                        )
+                        .join("、")}
                     </p>
                   )}
                 </Card>
@@ -183,16 +222,22 @@ export default async function ReviewQueuePage({
       )}
 
       <div className="text-ink-tertiary mt-6 flex items-center justify-between text-sm">
-        <span>Page {pageNumber}</span>
+        <span>第 {pageNumber} 页</span>
         <div className="flex gap-3">
           {pageNumber > 1 && (
-            <Link href={`/admin/interviews/review?filter=${activeFilter.key}&page=${pageNumber - 1}`} className="hover:text-ink">
-              ← Previous
+            <Link
+              href={`/admin/interviews/review?filter=${activeFilter.key}&page=${pageNumber - 1}`}
+              className="hover:text-ink"
+            >
+              ← 上一页
             </Link>
           )}
           {rows.length === pageSize && (
-            <Link href={`/admin/interviews/review?filter=${activeFilter.key}&page=${pageNumber + 1}`} className="hover:text-ink">
-              Next →
+            <Link
+              href={`/admin/interviews/review?filter=${activeFilter.key}&page=${pageNumber + 1}`}
+              className="hover:text-ink"
+            >
+              下一页 →
             </Link>
           )}
         </div>

@@ -19,53 +19,53 @@ begin;
 -- ---------------------------------------------------------------------------
 
 insert into public.companies (id, name, slug, country, industry, description) values
-  ('c1000000-0000-4000-8000-000000000001', 'ByteDance',     'bytedance',             'CN', 'Internet / AI',       'Consumer internet company with an embodied AI research group (GR-3, Robix).'),
-  ('c1000000-0000-4000-8000-000000000002', 'NVIDIA',        'nvidia',                'US', 'Semiconductors / AI', 'GPU platforms and robotics stacks including Isaac, GR00T and Jetson.'),
-  ('c1000000-0000-4000-8000-000000000003', 'Physical Intelligence', 'physical-intelligence', 'US', 'Robotics / AI', 'Builds generalist robot foundation models such as pi0 and pi0-FAST.'),
-  ('c1000000-0000-4000-8000-000000000004', 'Figure AI',     'figure-ai',             'US', 'Robotics',            'Humanoid robots for general-purpose labour, powered by the Helmsman VLA model.'),
-  ('c1000000-0000-4000-8000-000000000005', 'Unitree',       'unitree',               'CN', 'Robotics',            'Quadruped and humanoid robots widely used as research hardware platforms.'),
-  ('c1000000-0000-4000-8000-000000000006', 'AgiBot',        'agibot',                'CN', 'Robotics / AI',       'Embodied AI company building the Zhiyuan humanoid series and GO-1 model.'),
-  ('c1000000-0000-4000-8000-000000000007', 'DJI',           'dji',                   'CN', 'Robotics',            'Consumer and enterprise drones, onboard perception and flight control.');
+  ('c1000000-0000-4000-8000-000000000001', 'ByteDance',     'bytedance',             'CN', '互联网 / AI',       '拥有具身智能研究团队（GR-3、Robix）的互联网公司。'),
+  ('c1000000-0000-4000-8000-000000000002', 'NVIDIA',        'nvidia',                'US', '半导体 / AI', '提供 Isaac、GR00T 和 Jetson 等 GPU 平台与机器人技术栈。'),
+  ('c1000000-0000-4000-8000-000000000003', 'Physical Intelligence', 'physical-intelligence', 'US', '机器人 / AI', '开发 pi0、pi0-FAST 等通用机器人基础模型。'),
+  ('c1000000-0000-4000-8000-000000000004', 'Figure AI',     'figure-ai',             'US', '机器人',            '借助 Helmsman VLA 模型开发面向通用任务的人形机器人。'),
+  ('c1000000-0000-4000-8000-000000000005', 'Unitree',       'unitree',               'CN', '机器人',            '提供广泛用于科研硬件平台的四足与人形机器人。'),
+  ('c1000000-0000-4000-8000-000000000006', 'AgiBot',        'agibot',                'CN', '机器人 / AI',       '开发智元人形机器人系列与 GO-1 模型的具身智能公司。'),
+  ('c1000000-0000-4000-8000-000000000007', 'DJI',           'dji',                   'CN', '机器人',            '提供消费级与企业级无人机，以及机载感知和飞控技术。');
 
 -- ---------------------------------------------------------------------------
 -- positions
 -- ---------------------------------------------------------------------------
 
 insert into public.positions (id, company_id, title, slug, category, location) values
-  ('a1000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001', 'Embodied AI Algorithm Engineer', 'embodied-ai-algorithm-engineer', 'Algorithm',  'Beijing / Shenzhen'),
-  ('a1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000002', 'Robotics Systems Engineer',      'robotics-systems-engineer',      'Systems',    'Santa Clara, CA'),
-  ('a1000000-0000-4000-8000-000000000003', 'c1000000-0000-4000-8000-000000000003', 'Embodied AI Research Scientist', 'embodied-ai-research-scientist', 'Research',   'San Francisco, CA'),
-  ('a1000000-0000-4000-8000-000000000004', 'c1000000-0000-4000-8000-000000000004', 'VLA Model Engineer',             'vla-model-engineer',             'Model',      'Sunnyvale, CA'),
-  ('a1000000-0000-4000-8000-000000000005', 'c1000000-0000-4000-8000-000000000006', 'Robot Learning Engineer',        'robot-learning-engineer',        'Robot Learning', 'Shanghai');
+  ('a1000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001', '具身智能算法工程师', 'embodied-ai-algorithm-engineer', '算法',  '北京 / 深圳'),
+  ('a1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000002', '机器人系统工程师',      'robotics-systems-engineer',      '系统',    '圣克拉拉, CA'),
+  ('a1000000-0000-4000-8000-000000000003', 'c1000000-0000-4000-8000-000000000003', '具身智能研究科学家', 'embodied-ai-research-scientist', '研究',   '旧金山, CA'),
+  ('a1000000-0000-4000-8000-000000000004', 'c1000000-0000-4000-8000-000000000004', 'VLA 模型工程师',             'vla-model-engineer',             '模型',      '桑尼维尔, CA'),
+  ('a1000000-0000-4000-8000-000000000005', 'c1000000-0000-4000-8000-000000000006', '机器人学习工程师',        'robot-learning-engineer',        '机器人学习', '上海');
 
 insert into public.positions (id, company_id, title, slug, category, location) values
-  ('a1000000-0000-4000-8000-000000000006', 'c1000000-0000-4000-8000-000000000005', 'Robot Learning Intern', 'robot-learning-intern', 'Robot Learning', 'Hangzhou'),
-  ('a1000000-0000-4000-8000-000000000007', 'c1000000-0000-4000-8000-000000000007', 'Perception Algorithm Engineer', 'perception-algorithm-engineer', 'Perception', 'Shenzhen'),
-  ('a1000000-0000-4000-8000-000000000008', 'c1000000-0000-4000-8000-000000000003', 'VLA Research Intern', 'vla-research-intern', 'Research', 'San Francisco, CA'),
-  ('a1000000-0000-4000-8000-000000000009', 'c1000000-0000-4000-8000-000000000004', 'Humanoid Learning Engineer', 'humanoid-learning-engineer', 'Robot Learning', 'Sunnyvale, CA'),
-  ('a1000000-0000-4000-8000-000000000010', 'c1000000-0000-4000-8000-000000000006', 'Robot Learning New Grad', 'robot-learning-new-grad', 'Robot Learning', 'Shanghai'),
-  ('a1000000-0000-4000-8000-000000000011', 'c1000000-0000-4000-8000-000000000002', 'Robot Learning Intern', 'robot-learning-intern', 'Research', 'Santa Clara, CA'),
-  ('a1000000-0000-4000-8000-000000000012', 'c1000000-0000-4000-8000-000000000001', 'VLA Research Intern', 'vla-research-intern', 'Research', 'Beijing');
+  ('a1000000-0000-4000-8000-000000000006', 'c1000000-0000-4000-8000-000000000005', '机器人学习实习生', 'robot-learning-intern', '机器人学习', '杭州'),
+  ('a1000000-0000-4000-8000-000000000007', 'c1000000-0000-4000-8000-000000000007', '感知算法工程师', 'perception-algorithm-engineer', '感知', '深圳'),
+  ('a1000000-0000-4000-8000-000000000008', 'c1000000-0000-4000-8000-000000000003', 'VLA 研究实习生', 'vla-research-intern', '研究', '旧金山, CA'),
+  ('a1000000-0000-4000-8000-000000000009', 'c1000000-0000-4000-8000-000000000004', '人形机器人学习工程师', 'humanoid-learning-engineer', '机器人学习', '桑尼维尔, CA'),
+  ('a1000000-0000-4000-8000-000000000010', 'c1000000-0000-4000-8000-000000000006', '机器人学习应届生', 'robot-learning-new-grad', '机器人学习', '上海'),
+  ('a1000000-0000-4000-8000-000000000011', 'c1000000-0000-4000-8000-000000000002', '机器人学习实习生', 'robot-learning-intern', '研究', '圣克拉拉, CA'),
+  ('a1000000-0000-4000-8000-000000000012', 'c1000000-0000-4000-8000-000000000001', 'VLA 研究实习生', 'vla-research-intern', '研究', '北京');
 
 -- ---------------------------------------------------------------------------
 -- topics
 -- ---------------------------------------------------------------------------
 
 insert into public.topics (id, name, slug, parent_id, description) values
-  ('d1000000-0000-4000-8000-000000000001', 'Embodied AI',      'embodied-ai',      null,                                 'Agents that perceive, reason and act in the physical world.'),
-  ('d1000000-0000-4000-8000-000000000002', 'Transformer',      'transformer',      null,                                 'Attention-only sequence architecture used across vision, language and control.'),
-  ('d1000000-0000-4000-8000-000000000003', 'Attention',        'attention',        'd1000000-0000-4000-8000-000000000002', 'Content-based weighted pooling over a set of value vectors.'),
-  ('d1000000-0000-4000-8000-000000000004', 'QKV',              'qkv',              'd1000000-0000-4000-8000-000000000003', 'Query, Key and Value projections inside scaled dot-product attention.'),
-  ('d1000000-0000-4000-8000-000000000005', 'KV Cache',         'kv-cache',         'd1000000-0000-4000-8000-000000000003', 'Reuse of past key/value tensors to make autoregressive decoding cheap.'),
-  ('d1000000-0000-4000-8000-000000000006', 'VLA',              'vla',              'd1000000-0000-4000-8000-000000000001', 'Vision-Language-Action models that map observations plus instructions to robot actions.'),
-  ('d1000000-0000-4000-8000-000000000007', 'World Model',      'world-model',      'd1000000-0000-4000-8000-000000000001', 'Learned dynamics model used for prediction, planning or data generation.'),
-  ('d1000000-0000-4000-8000-000000000008', 'Diffusion Policy', 'diffusion-policy', 'd1000000-0000-4000-8000-000000000001', 'Action generation by iterative denoising of a trajectory.'),
-  ('d1000000-0000-4000-8000-000000000009', 'RL',               'rl',               'd1000000-0000-4000-8000-000000000001', 'Reinforcement learning: optimising behaviour from reward signals.'),
-  ('d1000000-0000-4000-8000-000000000010', 'PPO',              'ppo',              'd1000000-0000-4000-8000-000000000009', 'On-policy policy-gradient method with a clipped surrogate objective.'),
-  ('d1000000-0000-4000-8000-000000000011', 'GRPO',             'grpo',             'd1000000-0000-4000-8000-000000000009', 'Group Relative Policy Optimisation — critic-free relative advantage.'),
-  ('d1000000-0000-4000-8000-000000000012', 'Robotics',         'robotics',         'd1000000-0000-4000-8000-000000000001', 'Kinematics, dynamics, control and hardware-in-the-loop concerns.'),
-  ('d1000000-0000-4000-8000-000000000013', 'Robot Data',       'robot-data',       'd1000000-0000-4000-8000-000000000012', 'Teleoperation, collection, cleaning and curation of robot trajectories.'),
-  ('d1000000-0000-4000-8000-000000000014', 'SE(3)',            'se3',              'd1000000-0000-4000-8000-000000000012', 'Special Euclidean group of rigid rotations and translations in 3D.');
+  ('d1000000-0000-4000-8000-000000000001', '具身智能',      'embodied-ai',      null,                                 '能够在物理世界中感知、推理并采取行动的智能体。'),
+  ('d1000000-0000-4000-8000-000000000002', 'Transformer',      'transformer',      null,                                 '广泛用于视觉、语言和控制的纯 Attention 序列架构。'),
+  ('d1000000-0000-4000-8000-000000000003', 'Attention',        'attention',        'd1000000-0000-4000-8000-000000000002', '基于内容对一组 value 向量进行加权汇聚。'),
+  ('d1000000-0000-4000-8000-000000000004', 'QKV',              'qkv',              'd1000000-0000-4000-8000-000000000003', '缩放点积 Attention 中的 Query、Key 和 Value 投影。'),
+  ('d1000000-0000-4000-8000-000000000005', 'KV Cache',         'kv-cache',         'd1000000-0000-4000-8000-000000000003', '复用过去的 key/value 张量，降低自回归解码的计算成本。'),
+  ('d1000000-0000-4000-8000-000000000006', 'VLA',              'vla',              'd1000000-0000-4000-8000-000000000001', '将观测和指令映射为机器人动作的 Vision-Language-Action 模型。'),
+  ('d1000000-0000-4000-8000-000000000007', '世界模型',      'world-model',      'd1000000-0000-4000-8000-000000000001', '用于预测、规划或生成数据的学习型动力学模型。'),
+  ('d1000000-0000-4000-8000-000000000008', 'Diffusion Policy', 'diffusion-policy', 'd1000000-0000-4000-8000-000000000001', '通过对轨迹进行迭代去噪来生成动作。'),
+  ('d1000000-0000-4000-8000-000000000009', 'RL',               'rl',               'd1000000-0000-4000-8000-000000000001', '强化学习：根据奖励信号优化行为。'),
+  ('d1000000-0000-4000-8000-000000000010', 'PPO',              'ppo',              'd1000000-0000-4000-8000-000000000009', '使用截断代理目标的 on-policy policy-gradient 方法。'),
+  ('d1000000-0000-4000-8000-000000000011', 'GRPO',             'grpo',             'd1000000-0000-4000-8000-000000000009', 'Group Relative Policy Optimisation：不需要 critic 的相对优势估计。'),
+  ('d1000000-0000-4000-8000-000000000012', '机器人学',         'robotics',         'd1000000-0000-4000-8000-000000000001', '涵盖运动学、动力学、控制和硬件在环等问题。'),
+  ('d1000000-0000-4000-8000-000000000013', '机器人数据',       'robot-data',       'd1000000-0000-4000-8000-000000000012', '机器人的遥操作、采集、清洗和轨迹整理。'),
+  ('d1000000-0000-4000-8000-000000000014', 'SE(3)',            'se3',              'd1000000-0000-4000-8000-000000000012', '三维空间中刚体旋转和平移组成的特殊欧氏群。');
 
 -- ---------------------------------------------------------------------------
 -- questions (canonical)
@@ -1569,5 +1569,267 @@ insert into public.question_topics (question_id, topic_id, weight) values
   ('f1000000-0000-4000-8000-000000000010', 'd1000000-0000-4000-8000-000000000013', 1.0),
   ('f1000000-0000-4000-8000-000000000010', 'd1000000-0000-4000-8000-000000000012', 0.8),
   ('f1000000-0000-4000-8000-000000000010', 'd1000000-0000-4000-8000-000000000001', 0.6);
+
+-- ---------------------------------------------------------------------------
+-- Chinese display content
+-- ---------------------------------------------------------------------------
+
+update public.questions
+set
+  title = case id
+    when 'f1000000-0000-4000-8000-000000000001' then 'Attention 中的 Q、K 和 V 是什么？'
+    when 'f1000000-0000-4000-8000-000000000002' then '为什么 KV Cache 有用？'
+    when 'f1000000-0000-4000-8000-000000000003' then 'PPO 和 GRPO 有什么区别？'
+    when 'f1000000-0000-4000-8000-000000000004' then '为什么 GRPO 不需要 critic？'
+    when 'f1000000-0000-4000-8000-000000000005' then '什么是 Action Chunking？'
+    when 'f1000000-0000-4000-8000-000000000006' then '什么是 Diffusion Policy？'
+    when 'f1000000-0000-4000-8000-000000000007' then '什么是 Vision-Language-Action 模型？'
+    when 'f1000000-0000-4000-8000-000000000008' then '什么是动作条件世界模型？'
+    when 'f1000000-0000-4000-8000-000000000009' then '什么是 SE(3)？'
+    when 'f1000000-0000-4000-8000-000000000010' then '机器人数据采集流水线主要有哪些阶段？'
+  end,
+  summary = case id
+    when 'f1000000-0000-4000-8000-000000000001' then 'Query 负责提出查询，Key 用于索引，Value 携带最终汇聚的内容。'
+    when 'f1000000-0000-4000-8000-000000000002' then 'KV Cache 用额外内存换取计算量，让每个新 token 只需关注自身和历史缓存。'
+    when 'f1000000-0000-4000-8000-000000000003' then 'PPO 使用学习到的 critic 评估动作，GRPO 则使用采样组的平均奖励作为基线。'
+    when 'f1000000-0000-4000-8000-000000000004' then 'GRPO 使用同一 prompt 的采样组平均奖励作为优势基线，因此不需要额外的 critic 网络。'
+    when 'f1000000-0000-4000-8000-000000000005' then '一次预测一小段未来动作，执行后再重新观测和规划。'
+    when 'f1000000-0000-4000-8000-000000000006' then '通过迭代去噪生成动作轨迹的视觉运动策略。'
+    when 'f1000000-0000-4000-8000-000000000007' then '同时接收图像和语言指令，并输出机器人动作的模型。'
+    when 'f1000000-0000-4000-8000-000000000008' then '根据当前状态和候选动作预测未来观测的学习型动力学模型。'
+    when 'f1000000-0000-4000-8000-000000000009' then '三维空间中的特殊欧氏群，表示刚体的旋转和平移。'
+    when 'f1000000-0000-4000-8000-000000000010' then '任务定义、遥操作采集、同步校准、清洗标注、整理以及训练期混合。'
+  end,
+  canonical_answer = case id
+    when 'f1000000-0000-4000-8000-000000000001' then '给定输入嵌入 X，Attention 学习三个线性投影：Q = XW_Q、K = XW_K、V = XW_V。Query 是寻找信息的向量，Key 是每个 token 用于匹配的标签，Value 则是实际参与加权混合的内容。分数按照 QK^T / sqrt(d_k) 计算，经过 softmax 后对 V 做加权求和。因此，Key 决定取多少，Value 决定取什么。'
+    when 'f1000000-0000-4000-8000-000000000002' then '自回归解码在每一步都会重新计算整个前缀的 Attention。长度为 n 时，朴素做法需要 O(n^2) 的工作量。早先 token 的 key/value 在生成后不会改变，因此可以缓存并复用。生成新 token 时，只需计算自己的 Q、K、V，并与缓存的 K/V 做 Attention：每一步从 O(n^2) 降为 O(n)，代价是额外的 O(n) 内存。'
+    when 'f1000000-0000-4000-8000-000000000003' then 'PPO 用 value network，也就是 critic，估计 advantage，通常写作 A = GAE(rewards, V(s))。GRPO 完全移除了 critic：对同一个 prompt 采样 G 个输出，用 reward model 或 verifier 打分，再在组内归一化 A_i = (r_i - mean(r)) / std(r)。最后仍然使用带 clipping 的 PPO 风格目标和 KL 项来更新 policy。'
+    when 'f1000000-0000-4000-8000-000000000004' then '优势只需要一个与当前动作无关的基线：A(s, a) = Q(s, a) - b(s)。学习到的 critic V(s) 只是 b(s) 的一种实现。GRPO 对同一个 prompt 采样 G 个输出，并把这组样本的平均奖励作为 b(s)。由于组内样本共享同一个 prompt，这个均值可以作为与动作无关的基线，不需要额外的 value loss 或 GAE。'
+    when 'f1000000-0000-4000-8000-000000000005' then '策略不再把一个观测映射为一个动作，而是输出 H 个动作组成的 chunk：a_t 到 a_{t+H-1}。机器人执行这段动作后重新观测。这样可以摊薄一次昂贵前向计算的成本，并缩短 credit assignment 的有效时间跨度。chunk 太短会带来抖动和更高的计算开销，太长则会降低对漂移和接触变化的反应能力。'
+    when 'f1000000-0000-4000-8000-000000000006' then 'Diffusion Policy 把动作生成视为条件去噪。先将长度为 H 的动作轨迹初始化为高斯噪声，再使用以观测 o 为条件的去噪网络，经过 K 步逐渐移除噪声。训练时从干净轨迹出发加噪并预测噪声，推理时执行去噪后的动作 chunk，并可结合 receding-horizon control。它能够表示多峰示范行为，但代价是每次决策需要多步去噪，带来推理延迟。'
+    when 'f1000000-0000-4000-8000-000000000007' then 'VLA 在 Vision-Language Model 的基础上增加 action head。一个或多个相机的观测被编码成视觉 token，语言指令经过 token 化后与视觉信息由预训练 VLM backbone 融合。独立的 action expert 再把融合表示映射为连续或离散动作，并使用机器人示范数据训练。它的优势是能够迁移互联网图像文本预训练得到的语义知识，局限则包括闭环延迟、深度和力觉不足以及语义理解到精细接触操作之间的差距。'
+    when 'f1000000-0000-4000-8000-000000000008' then '动作条件世界模型近似 p(o_{t+1} | o_{t-k..t}, a_t..a_{t+H-1})。它在轨迹数据上训练，不像 policy 那样直接选择动作，而是回答候选动作序列会带来什么未来观测，因此可以用于 model-predictive control、规划和生成合成训练数据。设计上的关键是 latent space：像素空间容易监督但会浪费容量，latent space 更紧凑高效却需要良好正则化，否则可能发生模型利用。'
+    when 'f1000000-0000-4000-8000-000000000009' then 'SE(3) 是形如 x -> Rx + t 的刚体变换群，其中 R 属于 SO(3)，t 属于 R^3，共有六个自由度。它通常表示为 4x4 齐次矩阵 [[R, t], [0, 1]]，这样变换组合可以直接写成矩阵乘法。在机器人学中还要注意参考坐标系：一个位姿只有相对于明确的 frame 才有意义。'
+    when 'f1000000-0000-4000-8000-000000000010' then '典型流程包括：1）定义任务、机器人本体和成功标准；2）以固定控制频率进行遥操作采集，记录关节状态、末端位姿、相机、力矩和夹爪状态；3）完成时间同步、相机标定和手眼标定；4）删除失败或空闲片段并处理丢帧；5）标注语言指令、子任务和成功标签；6）整理数据、平衡任务与场景多样性，并决定机器人数据与仿真或人类视频的混合比例。'
+  end,
+  deep_answer = case id
+    when 'f1000000-0000-4000-8000-000000000001' then 'Q、K、V 的拆分让匹配和内容传递彼此独立。如果直接对输入做平均，一个 token 只能按自身 embedding 与其他 token 的相似度参与。拆开后，Key 可以表达这是模型正在寻找的类型，Value 可以表达被选中后真正贡献的内容。多头 Attention 中每个 head 都有自己的 W_Q、W_K、W_V，可以学习语法、指代或几何等不同关系。Cross-Attention 中 Q 来自 decoder 或动作流，K 和 V 来自观测或语言编码器，这正是 VLA 中这种不对称结构重要的原因。'
+    when 'f1000000-0000-4000-8000-000000000002' then 'KV Cache 变大后，瓶颈通常从 FLOPs 转向内存带宽：解码要在 layers、heads、seq 和 d_k 组成的张量上进行带宽受限的读取。因此才会出现 multi-query attention、grouped-query attention 和 KV-cache quantisation，它们缩小的是缓存而不是计算。对机器人来说，运行在机载 GPU 上的 VLA 往往有严格的 10 到 50 Hz 延迟预算，可以采用分块 prompt、对最近帧使用 sliding-window attention，或将 KV 量化为 int8。'
+    when 'f1000000-0000-4000-8000-000000000003' then '两者最实际的区别是成本和方差。去掉 critic 可以省下一个接近 policy 大小的模型，包括参数、优化器状态和前向反向计算，这对 7B 级别以上的 VLA 很重要。代价是组相对优势比拟合出的 value function 更嘈杂，所以 GRPO 通常需要较大的采样组，并且更适合正确性明确的可验证奖励。奖励稠密且经过良好塑形，或样本效率最重要时，PPO 仍然可能更合适。'
+    when 'f1000000-0000-4000-8000-000000000004' then 'critic 提供的是期望回报基线，能够解释 prompt 本身有多难；GRPO 的采样组只是用有限个样本估计这个期望，组太小时方差会变大。除以组内标准差可以增强信号，但当所有样本得分接近时标准差会接近零，所以实现通常会 clipping 或跳过退化组。这也是 GRPO 适合数学、代码和经过单元测试的机器人子程序等可验证任务的原因。'
+    when 'f1000000-0000-4000-8000-000000000005' then 'Action Chunking 还有三个重要后果。第一是延迟：大模型不必在每个控制周期都完整运行，而是每隔一段时间重新规划并执行 chunk。第二是误差累积：重新规划次数变少后，策略纠正漂移的机会也变少，接触丰富的任务不能使用过长 chunk。第三是动作平滑：相邻 chunk 需要通过 temporal ensembling 或重叠预测上的指数平滑来衔接。'
+    when 'f1000000-0000-4000-8000-000000000006' then 'Diffusion Policy 的表示能力来自对多模态行为的建模。确定性的 MSE action head 往往会把多个有效策略平均成一个无效动作，而 diffusion head 可以表达多个 mode，再采样一条具体轨迹。它也能自然支持 score-based conditioning 和固定起点或目标等 inpainting 约束。主要成本是每次决策要做 K 次去噪，以及对 noise schedule 的敏感性；DDIM sampler、蒸馏和 one-step policy 可以缓解延迟。'
+    when 'f1000000-0000-4000-8000-000000000007' then 'VLA 的迁移能力来自大规模图像文本预训练，例如 backbone 可以先学会红色杯子在左边这类语义，再用较少的机器人数据学习动作。面试中可以继续讨论连续动作与离散动作、单相机与多相机、本体感知、action chunking，以及不同机器人共享 backbone 并使用本体专属 action head 的 cross-embodiment training。还应主动说明闭环延迟、RGB 缺少深度和力觉，以及语义理解与精细操作之间的差距。'
+    when 'f1000000-0000-4000-8000-000000000008' then '世界模型的价值在于把昂贵的真实机器人交互摊销到大量被动视频和少量带动作数据上。像 Dreamer 风格的 RSSM 一样，latent-space rollout 更紧凑，但必须防止 latent collapse。另一个已知失败模式是 model exploitation：优化器找到模型认为很好、但其实落在模型错误高置信区域的动作序列。因此 rollout 通常不会太长，并且需要和真实交互结合。'
+    when 'f1000000-0000-4000-8000-000000000009' then '旋转的表示方式很关键。SO(3) 是弯曲流形，直接使用三个 Euler angle 会产生奇异点和非欧氏插值问题，常见替代方案包括 quaternion、rotation matrix 和 Lie algebra se(3) 中的 6D twist。另一个关键点是 equivariance：以 SE(3) 为对称群设计的模型可以跨物体位姿和相机视角泛化，而不是记住每个姿态。'
+    when 'f1000000-0000-4000-8000-000000000010' then '数据流水线的风险点往往比流程名称更值得讨论。硬件漂移和重新标定会悄悄让旧数据失效，因此每次采集都应绑定校准版本。遥操作通常是吞吐瓶颈，可以用跨本体数据集、仿真增强和人类视频预训练缓解。示范质量通常比数量重要：少量一致、平滑、成功的轨迹可能优于大量噪声数据。最后还要固定每种机器人本体的 action space 和 observation space，否则本月采集的数据可能无法训练下季度的 policy。'
+  end
+where id in (
+  'f1000000-0000-4000-8000-000000000001',
+  'f1000000-0000-4000-8000-000000000002',
+  'f1000000-0000-4000-8000-000000000003',
+  'f1000000-0000-4000-8000-000000000004',
+  'f1000000-0000-4000-8000-000000000005',
+  'f1000000-0000-4000-8000-000000000006',
+  'f1000000-0000-4000-8000-000000000007',
+  'f1000000-0000-4000-8000-000000000008',
+  'f1000000-0000-4000-8000-000000000009',
+  'f1000000-0000-4000-8000-000000000010'
+);
+
+update public.interviews
+set
+  title = case id
+    when 'ea000000-0000-4000-8000-000000000001' then '具身智能研究科学家面经 — 2025 春季'
+    when 'ea000000-0000-4000-8000-000000000002' then 'NVIDIA 机器人系统工程师面经 — 2025 夏季'
+    when 'ea000000-0000-4000-8000-000000000003' then 'ByteDance 具身智能算法工程师面经 — 2024 秋季'
+    when 'ea000000-0000-4000-8000-000000000004' then 'VLA 研究实习生面经 — 2027 春季'
+    when 'ea000000-0000-4000-8000-000000000005' then '机器人学习实习生面经 — 2026 秋季'
+    when 'ea000000-0000-4000-8000-000000000006' then 'VLA 研究实习生面经 — 2027 冬季'
+    when 'ea000000-0000-4000-8000-000000000007' then '人形机器人学习工程师面经 — 2027 春季'
+    when 'ea000000-0000-4000-8000-000000000008' then '机器人学习实习生面经 — 2026 夏季'
+    when 'ea000000-0000-4000-8000-000000000009' then '机器人学习应届生面经 — 2027 春季'
+    when 'ea000000-0000-4000-8000-000000000010' then '感知算法工程师面经 — 2026 秋季'
+    when 'ea000000-0000-4000-8000-000000000011' then '具身智能算法工程师面经 — 2026 夏季'
+    when 'ea000000-0000-4000-8000-000000000012' then '机器人系统工程师面经 — 2027 春季'
+    when 'ea000000-0000-4000-8000-000000000013' then '具身智能研究科学家面经 — 2026 秋季'
+    when 'ea000000-0000-4000-8000-000000000014' then '人形机器人学习工程师面经 — 2026 冬季'
+    when 'ea000000-0000-4000-8000-000000000015' then '机器人学习实习生面经 — 2027 秋季'
+    when 'ea000000-0000-4000-8000-000000000016' then '机器人学习应届生面经 — 2026 夏季'
+    when 'ea000000-0000-4000-8000-000000000017' then '感知算法工程师面经 — 2027 春季'
+    when 'ea000000-0000-4000-8000-000000000018' then 'VLA 研究实习生面经 — 2026 冬季'
+    when 'ea000000-0000-4000-8000-000000000019' then '机器人学习实习生面经 — 2025 秋季'
+    when 'ea000000-0000-4000-8000-000000000020' then 'VLA 研究实习生面经 — 2025 冬季'
+  end,
+  location = case id
+    when 'ea000000-0000-4000-8000-000000000001' then '旧金山, CA'
+    when 'ea000000-0000-4000-8000-000000000002' then '圣克拉拉, CA'
+    when 'ea000000-0000-4000-8000-000000000003' then '北京'
+    when 'ea000000-0000-4000-8000-000000000004' then '北京'
+    when 'ea000000-0000-4000-8000-000000000005' then '圣克拉拉, CA'
+    when 'ea000000-0000-4000-8000-000000000006' then '旧金山, CA'
+    when 'ea000000-0000-4000-8000-000000000007' then '桑尼维尔, CA'
+    when 'ea000000-0000-4000-8000-000000000008' then '杭州'
+    when 'ea000000-0000-4000-8000-000000000009' then '上海'
+    when 'ea000000-0000-4000-8000-000000000010' then '深圳'
+    when 'ea000000-0000-4000-8000-000000000011' then '北京'
+    when 'ea000000-0000-4000-8000-000000000012' then '圣克拉拉, CA'
+    when 'ea000000-0000-4000-8000-000000000013' then '旧金山, CA'
+    when 'ea000000-0000-4000-8000-000000000014' then '桑尼维尔, CA'
+    when 'ea000000-0000-4000-8000-000000000015' then '杭州'
+    when 'ea000000-0000-4000-8000-000000000016' then '上海'
+    when 'ea000000-0000-4000-8000-000000000017' then '上海'
+    when 'ea000000-0000-4000-8000-000000000018' then '北京'
+    when 'ea000000-0000-4000-8000-000000000019' then '圣克拉拉, CA'
+    when 'ea000000-0000-4000-8000-000000000020' then '旧金山, CA'
+  end,
+  summary = case id
+    when 'ea000000-0000-4000-8000-000000000001' then '开发示例：涵盖 Action Chunking、Diffusion Policy、VLA 设计和世界模型。'
+    when 'ea000000-0000-4000-8000-000000000002' then '开发示例：重点考察 Attention 系统、推理延迟、SE(3) 和机器人数据流水线。'
+    when 'ea000000-0000-4000-8000-000000000003' then '开发示例：讨论 PPO 与 GRPO、VLA 语义、Action Chunking 和控制环预算。'
+    when 'ea000000-0000-4000-8000-000000000004' then '开发示例：讨论 VLA 与强化学习，并包含一道 Coding 题。'
+    when 'ea000000-0000-4000-8000-000000000005' then '开发示例：涵盖 Attention、机器人数据和一个小型控制工具的实现。'
+    when 'ea000000-0000-4000-8000-000000000006' then '开发示例：涵盖 Diffusion Policy、Action Chunking、世界模型和数据质量。'
+    when 'ea000000-0000-4000-8000-000000000007' then '开发示例：讨论 VLA 架构、机器人数据和刚体表示。'
+    when 'ea000000-0000-4000-8000-000000000008' then '开发示例：重点考察 Action Chunking、SE(3) 和高质量示范采集。'
+    when 'ea000000-0000-4000-8000-000000000009' then '开发示例：讨论无 critic 的策略优化、VLA grounding 和数据整理。'
+    when 'ea000000-0000-4000-8000-000000000010' then '开发示例：结合 Attention、SE(3) 和感知系统中的工程取舍。'
+    when 'ea000000-0000-4000-8000-000000000011' then '开发示例：讨论策略优化和在控制环中部署大模型策略。'
+    when 'ea000000-0000-4000-8000-000000000012' then '开发示例：考察 KV Cache 直觉、坐标系和数据流水线设计。'
+    when 'ea000000-0000-4000-8000-000000000013' then '开发示例：重点讨论 Diffusion Policy 推理和动作序列建模。'
+    when 'ea000000-0000-4000-8000-000000000014' then '开发示例：包含招聘初筛、技术面、研究深入讨论和 Coding 面。'
+    when 'ea000000-0000-4000-8000-000000000015' then '开发示例：用较短的初筛考察控制表示和机器人示范。'
+    when 'ea000000-0000-4000-8000-000000000016' then '开发示例：讨论示范回放、VLA 条件建模和 RL 基线。'
+    when 'ea000000-0000-4000-8000-000000000017' then '开发示例：讨论 Attention、视觉特征、刚体变换和控制延迟。'
+    when 'ea000000-0000-4000-8000-000000000018' then '开发示例：讨论 VLA grounding 以及如何评估动作预测。'
+    when 'ea000000-0000-4000-8000-000000000019' then '开发示例：讨论 Transformer 推理、机器人数据和 SE(3) 约定。'
+    when 'ea000000-0000-4000-8000-000000000020' then '开发示例：讨论 Action Chunking、Diffusion Policy 和长时域数据。'
+  end,
+  language = 'zh-CN'
+where id in (
+  'ea000000-0000-4000-8000-000000000001', 'ea000000-0000-4000-8000-000000000002',
+  'ea000000-0000-4000-8000-000000000003', 'ea000000-0000-4000-8000-000000000004',
+  'ea000000-0000-4000-8000-000000000005', 'ea000000-0000-4000-8000-000000000006',
+  'ea000000-0000-4000-8000-000000000007', 'ea000000-0000-4000-8000-000000000008',
+  'ea000000-0000-4000-8000-000000000009', 'ea000000-0000-4000-8000-000000000010',
+  'ea000000-0000-4000-8000-000000000011', 'ea000000-0000-4000-8000-000000000012',
+  'ea000000-0000-4000-8000-000000000013', 'ea000000-0000-4000-8000-000000000014',
+  'ea000000-0000-4000-8000-000000000015', 'ea000000-0000-4000-8000-000000000016',
+  'ea000000-0000-4000-8000-000000000017', 'ea000000-0000-4000-8000-000000000018',
+  'ea000000-0000-4000-8000-000000000019', 'ea000000-0000-4000-8000-000000000020'
+);
+
+update public.interview_rounds
+set
+  title = case round_type
+    when 'technical' then '技术面讨论'
+    when 'coding' then 'Coding 实战'
+    when 'research' then '研究深入讨论'
+    when 'manager' then 'Hiring manager 面'
+    else '面试轮次'
+  end,
+  interviewer_role = case round_type
+    when 'manager' then 'Hiring manager'
+    when 'technical' then '研究或招聘团队'
+    else '技术面试官'
+  end,
+  summary = case round_type
+    when 'technical' then '考察基础概念、推理能力和表达。'
+    when 'coding' then '考察实际推理、实现能力和工程取舍。'
+    when 'research' then '深入讨论研究方向、实验设计和技术取舍。'
+    when 'manager' then '讨论项目经验、协作方式和岗位匹配度。'
+    else '考察面试相关能力。'
+  end;
+
+update public.interview_questions
+set original_wording = case question_id
+  when 'f1000000-0000-4000-8000-000000000001' then '请解释 Attention 中的 Q、K、V，并说明你会如何测试实现。'
+  when 'f1000000-0000-4000-8000-000000000002' then '当机器人策略有严格的延迟预算时，KV Cache 能提供什么帮助？'
+  when 'f1000000-0000-4000-8000-000000000003' then '比较 PPO 和 GRPO，具体说明训练时各自需要什么。'
+  when 'f1000000-0000-4000-8000-000000000004' then '如果 GRPO 没有 critic，谁来承担 baseline 的作用？'
+  when 'f1000000-0000-4000-8000-000000000005' then '请说明为什么策略要预测一段动作，而不是一次只预测一个动作。'
+  when 'f1000000-0000-4000-8000-000000000006' then '如何向只做过监督学习的工程师解释 Diffusion Policy？'
+  when 'f1000000-0000-4000-8000-000000000007' then 'VLA 与普通视觉策略有什么区别？'
+  when 'f1000000-0000-4000-8000-000000000008' then '什么时候学习到的世界模型适合用于机器人规划？'
+  when 'f1000000-0000-4000-8000-000000000009' then '如何在 SE(3) 中表示位姿？它相对于哪个坐标系？'
+  when 'f1000000-0000-4000-8000-000000000010' then '机器人数据采集流水线中有哪些重要阶段？'
+  else case when question_id is null then '请描述你在机器人学习系统中做过的一项实现决策。' else original_wording end
+end;
+
+update public.coding_problems
+set
+  title = case slug
+    when 'implement-stable-softmax' then '实现数值稳定的 Softmax'
+    when 'implement-layer-normalization' then '实现 Layer Normalization'
+    when 'scaled-dot-product-attention' then '实现缩放点积 Attention'
+    when 'average-multi-head-attention' then '实现多头 Attention 平均'
+    when 'build-causal-attention-mask' then '构建因果 Attention Mask'
+    when 'compute-discounted-returns' then '计算折扣回报'
+    when 'generalized-advantage-estimation' then '实现广义优势估计（GAE）'
+    when 'ppo-clipped-objective' then '实现 PPO Clipped Objective'
+    when 'group-relative-advantage' then '计算组相对优势'
+    when 'euler-angles-to-quaternion' then '欧拉角转 Quaternion'
+    when 'multiply-unit-quaternions' then '相乘两个单位 Quaternion'
+    when 'spherical-quaternion-interpolation' then '球面 Quaternion 插值'
+    when 'transform-point-with-se3' then '使用 SE(3) 变换点'
+    when 'ddpm-forward-noise-step' then '执行 DDPM 前向加噪'
+    when 'linear-noise-schedule' then '生成线性噪声调度'
+    when 'flow-matching-vector-field' then '计算 Flow Matching 向量场'
+    when 'replay-buffer-retention' then '模拟 Replay Buffer 保留'
+    when 'blend-overlapping-action-chunks' then '混合重叠的 Action Chunks'
+    when 'create-sliding-windows' then '创建滑动窗口'
+    when 'top-k-token-frequencies' then '统计 Top-K Token 频率'
+  end,
+  description = case slug
+    when 'implement-stable-softmax' then '为一组 logits 计算数值稳定的 softmax。先减去最大 logit，再进行指数运算，最后返回四舍五入到六位小数的概率。'
+    when 'implement-layer-normalization' then '使用总体方差对一个特征向量进行归一化。在平方根中使用给定的 epsilon，并将每个归一化值四舍五入到六位小数。'
+    when 'scaled-dot-product-attention' then '实现一个 query 的缩放点积 Attention。对 query-key 分数应用 softmax，并返回四舍五入到四位小数的加权 value 向量。'
+    when 'average-multi-head-attention' then '每个 Attention head 都独立地为同一个 query 汇聚 value 向量。计算每个 head 的缩放 Attention，再对所有 head 的输出求平均。'
+    when 'build-causal-attention-mask' then '将每一行 Attention 分数转换为因果 softmax：位置 i 只能关注不大于 i 的位置，未来位置的概率必须为零。'
+    when 'compute-discounted-returns' then '给定奖励序列和折扣因子，通过从后向前累积奖励，计算每个时间步的回报。'
+    when 'generalized-advantage-estimation' then '根据奖励和一个额外的 bootstrap value 计算 GAE advantage。从后向前使用 gamma 和 lambda，并将结果四舍五入到六位小数。'
+    when 'ppo-clipped-objective' then '为每个动作计算 PPO clipped surrogate 项并返回平均值。将 ratio 截断到 1 加减 epsilon 后再与 advantage 相乘。'
+    when 'group-relative-advantage' then '对同一 prompt 采样的奖励进行标准化。减去组均值并除以总体标准差，退化组返回零。'
+    when 'euler-angles-to-quaternion' then '将弧度制的 roll、pitch、yaw 转换为 xyzw 顺序的单位 Quaternion，并将分量四舍五入到六位小数。'
+    when 'multiply-unit-quaternions' then '使用 Hamilton product 组合两个 xyzw 顺序的单位 Quaternion，并按 xyzw 顺序返回结果。'
+    when 'spherical-quaternion-interpolation' then '沿最短球面路径在两个单位 Quaternion 之间插值。接近平行时才使用线性插值，并返回归一化结果。'
+    when 'transform-point-with-se3' then '对一个三维点应用刚体变换。先乘旋转矩阵，再加上平移向量。'
+    when 'ddpm-forward-noise-step' then '对每个坐标应用一次前向扩散步骤 x_t = sqrt(alpha_bar) x_0 + sqrt(1 - alpha_bar) epsilon。'
+    when 'linear-noise-schedule' then '根据请求的扩散步数，在 beta_start 和 beta_end 之间生成包含两端点的线性 beta 调度。'
+    when 'flow-matching-vector-field' then '对于从 x0 到 x1 的直线插值路径，计算恒定的 Flow Matching 目标向量 x1 - x0。'
+    when 'replay-buffer-retention' then '插入所有项目后模拟 FIFO Replay Buffer，再从保留下来的 buffer 中读取有效样本索引。'
+    when 'blend-overlapping-action-chunks' then '使用标量置信度权重混合 Action Chunks。所有 chunk 形状相同，为每个时间步和动作维度计算加权平均。'
+    when 'create-sliding-windows' then '使用窗口大小和步长，将序列切分为完整的滑动窗口，丢弃末尾不完整的窗口。'
+    when 'top-k-token-frequencies' then '统计 token 次数，并以 [token, count] 对的形式返回频率最高的 k 个 token。出现并列时按字典序确定顺序。'
+  end,
+  constraints = case slug
+    when 'implement-stable-softmax' then '1 <= len(logits) <= 128' || chr(10) || '输入和输出均为 JSON。'
+    when 'implement-layer-normalization' then '1 <= len(values) <= 256' || chr(10) || '输入 JSON 中包含 values 和 eps。'
+    when 'scaled-dot-product-attention' then 'Keys 与 query 维度相同。' || chr(10) || '输入和输出均为 JSON。'
+    when 'average-multi-head-attention' then '每个 head 的 value 维度相同。' || chr(10) || '将平均后的向量四舍五入到四位小数。'
+    when 'build-causal-attention-mask' then '分数矩阵为方阵，最多 64 行。' || chr(10) || '将概率四舍五入到六位小数。'
+    when 'compute-discounted-returns' then '0 <= gamma <= 1' || chr(10) || '每个 reward 返回一个值，并四舍五入到六位小数。'
+    when 'generalized-advantage-estimation' then 'len(values) = len(rewards) + 1' || chr(10) || '0 <= gamma, lambda <= 1。'
+    when 'ppo-clipped-objective' then 'Ratios 和 advantages 长度相同且不为空。' || chr(10) || '将标量结果四舍五入到六位小数。'
+    when 'group-relative-advantage' then '1 <= len(rewards) <= 128' || chr(10) || '将每个 advantage 四舍五入到六位小数。'
+    when 'euler-angles-to-quaternion' then '角度单位为弧度。' || chr(10) || '使用 roll-pitch-yaw 约定，并返回 [x, y, z, w]。'
+    when 'multiply-unit-quaternions' then '输入是 [x, y, z, w] 顺序的单位 Quaternion。' || chr(10) || '将分量四舍五入到六位小数。'
+    when 'spherical-quaternion-interpolation' then 'Quaternion 为单位长度，并使用 xyzw 顺序。' || chr(10) || '0 <= t <= 1。'
+    when 'transform-point-with-se3' then '旋转矩阵为 3x3，平移和点都是长度为三的向量。' || chr(10) || '将坐标四舍五入到六位小数。'
+    when 'ddpm-forward-noise-step' then '0 <= alpha_bar <= 1' || chr(10) || 'x0 和 noise 长度相同。' || chr(10) || '将坐标四舍五入到六位小数。'
+    when 'linear-noise-schedule' then 'steps 为正数。' || chr(10) || 'steps 为 1 时返回 beta_start，否则包含两个端点。'
+    when 'flow-matching-vector-field' then 'x0 和 x1 长度相同。' || chr(10) || '将每个分量四舍五入到六位小数。'
+    when 'replay-buffer-retention' then 'capacity 为正数。' || chr(10) || '忽略保留 buffer 之外的样本索引。'
+    when 'blend-overlapping-action-chunks' then '所有 chunk 形状相同，且权重为正数。' || chr(10) || '将每个动作四舍五入到六位小数。'
+    when 'create-sliding-windows' then 'window 和 stride 为正数。' || chr(10) || '只返回恰好包含 window 个元素的窗口。'
+    when 'top-k-token-frequencies' then '1 <= k <= 不同 token 的数量。' || chr(10) || 'Token 均为字符串。'
+  end;
+
+update public.coding_test_cases
+set name = '示例 ' || (order_index + 1)
+where is_hidden = false;
+
+update public.coding_problems
+set starter_code = replace(starter_code, '# TODO: implement the solution', '# TODO：实现该解法');
 
 commit;

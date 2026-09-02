@@ -3,11 +3,22 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import type { MLErrorCategory, MLEvaluationRequest, MLEvaluationResult, MLCaseResult, NumericalCheckResult, TensorDtype } from "@/types/ml-judge";
+import type {
+  MLErrorCategory,
+  MLEvaluationRequest,
+  MLEvaluationResult,
+  MLCaseResult,
+  NumericalCheckResult,
+  TensorDtype,
+} from "@/types/ml-judge";
 import type { CodingSubmissionStatus } from "@/types/database";
 
 import { importPolicy, resolveResourceProfile } from "../evaluator-config";
-import { buildHarnessScript, buildRunnerPayload, type RunnerPayload } from "../harness/python";
+import {
+  buildHarnessScript,
+  buildRunnerPayload,
+  type RunnerPayload,
+} from "../harness/python";
 import { aggregateGroups, statusFromGroups } from "../ml-result";
 
 /**
@@ -48,7 +59,11 @@ interface RawRunnerResult {
   total_runtime_ms: number | null;
 }
 
-function runPython(script: string, payload: RunnerPayload, timeoutMs: number): Promise<RawRunnerResult | null> {
+function runPython(
+  script: string,
+  payload: RunnerPayload,
+  timeoutMs: number,
+): Promise<RawRunnerResult | null> {
   return new Promise((resolve) => {
     let settled = false;
     const finish = (value: RawRunnerResult | null) => {
@@ -100,15 +115,27 @@ function runPython(script: string, payload: RunnerPayload, timeoutMs: number): P
         clearTimeout(timer);
         void rm(dir, { recursive: true, force: true });
         if (timedOut) {
-          finish({ cases: [], entrypoint_error: { category: "timeout", message: "Evaluation exceeded the time limit." }, total_runtime_ms: null });
+          finish({
+            cases: [],
+            entrypoint_error: { category: "timeout", message: "运行超过时间限制。" },
+            total_runtime_ms: null,
+          });
           return;
         }
         if (bytes > MAX_RESULT_BYTES * 2) {
-          finish({ cases: [], entrypoint_error: { category: "output_limit", message: "The evaluation produced too much output." }, total_runtime_ms: null });
+          finish({
+            cases: [],
+            entrypoint_error: {
+              category: "output_limit",
+              message: "运行产生的输出过多。",
+            },
+            total_runtime_ms: null,
+          });
           return;
         }
         finish(parseSentinel(stdout));
-        if (stderr.trim()) console.warn("[ml-judge] runner stderr:", stderr.slice(0, 500));
+        if (stderr.trim())
+          console.warn("[ml-judge] runner stderr:", stderr.slice(0, 500));
       });
 
       child.stdin.write(JSON.stringify(payload));
@@ -140,7 +167,10 @@ function parseSentinel(stdout: string): RawRunnerResult | null {
   return null;
 }
 
-function mapRunnerResult(raw: RawRunnerResult | null, request: MLEvaluationRequest): MLEvaluationResult {
+function mapRunnerResult(
+  raw: RawRunnerResult | null,
+  request: MLEvaluationRequest,
+): MLEvaluationResult {
   if (!raw) {
     return {
       mode: request.mode,
@@ -149,7 +179,10 @@ function mapRunnerResult(raw: RawRunnerResult | null, request: MLEvaluationReque
       cases: [],
       runtimeMs: null,
       memoryKb: null,
-      entrypointError: { category: "internal_error", message: "The evaluator did not return a usable result." },
+      entrypointError: {
+        category: "internal_error",
+        message: "评估器没有返回可用结果。",
+      },
     };
   }
 
@@ -168,8 +201,14 @@ function mapRunnerResult(raw: RawRunnerResult | null, request: MLEvaluationReque
     };
   }
 
-  const weightById = new Map(request.cases.map((testCase) => [testCase.id, testCase.weight]));
-  const hiddenById = new Set(request.cases.filter((testCase) => testCase.isHidden).map((testCase) => testCase.id));
+  const weightById = new Map(
+    request.cases.map((testCase) => [testCase.id, testCase.weight]),
+  );
+  const hiddenById = new Set(
+    request.cases
+      .filter((testCase) => testCase.isHidden)
+      .map((testCase) => testCase.id),
+  );
   const cases = (raw.cases ?? []).map((entry) => {
     const mapped = mapCaseResult(entry, weightById);
     return { ...mapped, isHidden: hiddenById.has(mapped.testCaseId) };
@@ -188,9 +227,13 @@ function mapRunnerResult(raw: RawRunnerResult | null, request: MLEvaluationReque
   };
 }
 
-function mapCaseResult(entry: Record<string, unknown>, weightById: Map<string, number>): MLCaseResult {
+function mapCaseResult(
+  entry: Record<string, unknown>,
+  weightById: Map<string, number>,
+): MLCaseResult {
   const status = (entry.status as CodingSubmissionStatus) ?? "internal_error";
-  const runtimeMs = typeof entry.runtime_ms === "number" ? Math.round(entry.runtime_ms) : null;
+  const runtimeMs =
+    typeof entry.runtime_ms === "number" ? Math.round(entry.runtime_ms) : null;
   const testCaseId = String(entry.id ?? "");
   return {
     testCaseId,
@@ -250,12 +293,15 @@ function mapGradientCheck(value: unknown): MLCaseResult["gradient"] {
   return {
     passed: Boolean(record.passed),
     forwardPassed: Boolean(record.forward_passed),
-    tensors: ((record.tensors as Array<Record<string, unknown>>) ?? []).map((tensor) => ({
-      label: String(tensor.label ?? ""),
-      passed: Boolean(tensor.passed),
-      maxAbsError: typeof tensor.max_abs_error === "number" ? tensor.max_abs_error : null,
-      missing: Boolean(tensor.missing),
-    })),
+    tensors: ((record.tensors as Array<Record<string, unknown>>) ?? []).map(
+      (tensor) => ({
+        label: String(tensor.label ?? ""),
+        passed: Boolean(tensor.passed),
+        maxAbsError:
+          typeof tensor.max_abs_error === "number" ? tensor.max_abs_error : null,
+        missing: Boolean(tensor.missing),
+      }),
+    ),
   };
 }
 

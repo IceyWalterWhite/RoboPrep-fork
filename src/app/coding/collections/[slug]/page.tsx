@@ -6,7 +6,11 @@ import { CheckCircle2, CircleDot, ChevronLeft } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
-import { CODING_DIFFICULTY_LABELS } from "@/lib/coding/constants";
+import {
+  CODING_DIFFICULTY_LABELS,
+  CODING_EVALUATION_MODE_LABELS,
+  CODING_FRAMEWORK_LABELS,
+} from "@/lib/coding/constants";
 import { getCodingCollectionBySlug } from "@/lib/coding/queries";
 
 export async function generateMetadata({
@@ -18,7 +22,7 @@ export async function generateMetadata({
   const collection = await getCodingCollectionBySlug(slug);
   return collection
     ? { title: collection.name, description: collection.description ?? undefined }
-    : { title: "Coding collection" };
+    : { title: "Coding 题单" };
 }
 
 export default async function CodingCollectionPage({
@@ -30,29 +34,35 @@ export default async function CodingCollectionPage({
   const collection = await getCodingCollectionBySlug(slug);
   if (!collection) notFound();
 
-  const solved = collection.problems.filter((problem) => problem.userStatus === "solved").length;
-  const attempted = collection.problems.filter((problem) => problem.userStatus === "attempted").length;
+  const solved = collection.problems.filter(
+    (problem) => problem.userStatus === "solved",
+  ).length;
+  const attempted = collection.problems.filter(
+    (problem) => problem.userStatus === "attempted",
+  ).length;
 
   return (
     <Container className="py-10">
       <Breadcrumbs
         items={[
           { label: "Coding", href: "/coding" },
-          { label: "Collections", href: "/coding/collections" },
+          { label: "题单", href: "/coding/collections" },
           { label: collection.name },
         ]}
       />
 
       <header className="border-line-subtle mt-7 border-b pb-8">
-        <h1 className="text-title text-ink font-semibold tracking-[-0.02em]">{collection.name}</h1>
+        <h1 className="text-title text-ink font-semibold tracking-[-0.02em]">
+          {collection.name}
+        </h1>
         {collection.description ? (
           <p className="text-ink-secondary mt-3 max-w-2xl text-[0.9375rem] leading-relaxed">
             {collection.description}
           </p>
         ) : null}
         <p className="text-ink-tertiary mt-4 text-sm">
-          {collection.problemCount} problems · {solved} solved
-          {attempted > 0 ? ` · ${attempted} attempted` : ""}
+          共 {collection.problemCount} 道题 · 已解决 {solved} 道
+          {attempted > 0 ? ` · 已尝试 ${attempted} 道` : ""}
         </p>
       </header>
 
@@ -76,19 +86,22 @@ export default async function CodingCollectionPage({
                   </Badge>
                   {problem.evaluationMode !== "program" ? (
                     <span className="text-ink-tertiary text-xs">
-                      {formatMode(problem.evaluationMode)}
-                      {problem.framework ? ` · ${formatLabel(problem.framework)}` : ""}
+                      {CODING_EVALUATION_MODE_LABELS[problem.evaluationMode] ??
+                        formatMode(problem.evaluationMode)}
+                      {problem.framework
+                        ? ` · ${CODING_FRAMEWORK_LABELS[problem.framework] ?? formatLabel(problem.framework)}`
+                        : ""}
                     </span>
                   ) : null}
                 </div>
               </div>
               {problem.userStatus === "solved" ? (
                 <span className="text-success-ink inline-flex items-center gap-1 text-sm">
-                  <CheckCircle2 className="size-4" aria-hidden /> Solved
+                  <CheckCircle2 className="size-4" aria-hidden /> 已解决
                 </span>
               ) : problem.userStatus === "attempted" ? (
                 <span className="text-warning-ink inline-flex items-center gap-1 text-sm">
-                  <CircleDot className="size-4" aria-hidden /> Attempted
+                  <CircleDot className="size-4" aria-hidden /> 已尝试
                 </span>
               ) : null}
             </Link>
@@ -101,16 +114,21 @@ export default async function CodingCollectionPage({
         className="text-ink-secondary hover:text-ink mt-6 inline-flex items-center gap-1 text-sm font-medium"
       >
         <ChevronLeft className="size-4" aria-hidden />
-        Back to all collections
+        返回全部题单
       </Link>
     </Container>
   );
 }
 
 function formatMode(mode: string): string {
-  return mode === "class" ? "Class" : "Function";
+  return mode === "class" ? "类题" : "函数题";
 }
 
 function formatLabel(value: string): string {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const labels: Record<string, string> = {
+    standard_python: "标准 Python",
+    ml_cpu_small: "ML CPU（小）",
+    ml_cpu_medium: "ML CPU（中）",
+  };
+  return labels[value.toLowerCase()] ?? "其他";
 }

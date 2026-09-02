@@ -21,7 +21,13 @@ export class OpenAICompatibleParser implements InterviewParserWithUsage {
   private readonly apiKey: string;
   private readonly timeoutMs: number;
 
-  constructor(config: { provider: string; model: string; baseUrl: string; apiKey: string; timeoutMs?: number }) {
+  constructor(config: {
+    provider: string;
+    model: string;
+    baseUrl: string;
+    apiKey: string;
+    timeoutMs?: number;
+  }) {
     this.provider = config.provider;
     this.model = config.model;
     this.baseUrl = config.baseUrl.replace(/\/$/, "");
@@ -65,20 +71,24 @@ export class OpenAICompatibleParser implements InterviewParserWithUsage {
 
     if (!response.ok) throw errorFromStatus(response.status);
 
-    const body = (await response.json().catch(() => null)) as
-      | { choices?: Array<{ message?: { content?: string } }>; usage?: { prompt_tokens?: number; completion_tokens?: number } }
-      | null;
+    const body = (await response.json().catch(() => null)) as {
+      choices?: Array<{ message?: { content?: string } }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
+    } | null;
 
     const content = body?.choices?.[0]?.message?.content;
     if (!content) {
-      throw new IngestionError("empty_response", "provider returned no content");
+      throw new IngestionError("empty_response", "解析服务提供方没有返回内容。");
     }
 
     let raw: unknown;
     try {
       raw = JSON.parse(stripFences(content));
     } catch {
-      throw new IngestionError("invalid_json", "provider content is not valid JSON");
+      throw new IngestionError(
+        "invalid_json",
+        "解析服务提供方返回的内容不是有效 JSON。",
+      );
     }
 
     try {
@@ -94,7 +104,9 @@ export class OpenAICompatibleParser implements InterviewParserWithUsage {
     } catch (error) {
       throw new IngestionError(
         "schema_mismatch",
-        error instanceof Error ? error.message.slice(0, 300) : "schema mismatch",
+        error instanceof Error
+          ? error.message.slice(0, 300)
+          : "返回内容与数据结构不匹配",
       );
     }
   }

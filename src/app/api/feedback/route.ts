@@ -21,7 +21,7 @@ export async function POST(request: Request): Promise<Response> {
   const rate = checkRateLimit(`feedback:${user?.id ?? requestId}`, 5, 3_600_000);
   if (!rate.allowed) {
     return Response.json(
-      { error: "Too many submissions. Please try again later." },
+      { error: "提交次数过多，请稍后再试。" },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }
@@ -30,16 +30,16 @@ export async function POST(request: Request): Promise<Response> {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
+    return Response.json({ error: "请求无效。" }, { status: 400 });
   }
 
   const { category, message } = (body ?? {}) as { category?: string; message?: string };
   if (!category || !(CATEGORIES as readonly string[]).includes(category)) {
-    return Response.json({ error: "Choose a category." }, { status: 400 });
+    return Response.json({ error: "请选择反馈类别。" }, { status: 400 });
   }
   const trimmed = (message ?? "").trim();
   if (trimmed.length < 10 || trimmed.length > 5000) {
-    return Response.json({ error: "Message must be 10–5000 characters." }, { status: 400 });
+    return Response.json({ error: "消息长度必须为 10–5000 个字符。" }, { status: 400 });
   }
 
   // Anonymous feedback is accepted but must bypass RLS via the service role
@@ -53,8 +53,11 @@ export async function POST(request: Request): Promise<Response> {
     message: trimmed,
   });
   if (error) {
-    logger.warnFrom("feedback_insert_failed", error, { requestId, route: "/api/feedback" });
-    return Response.json({ error: "Could not save feedback. Please try again." }, { status: 503 });
+    logger.warnFrom("feedback_insert_failed", error, {
+      requestId,
+      route: "/api/feedback",
+    });
+    return Response.json({ error: "无法保存反馈，请稍后再试。" }, { status: 503 });
   }
 
   logger.info("feedback_received", { requestId, route: "/api/feedback", category });

@@ -7,7 +7,7 @@ import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
-  title: "Choose a new password — RoboPrep",
+  title: "设置新密码 — RoboPrep",
   robots: { index: false, follow: false },
 };
 
@@ -19,7 +19,10 @@ export default async function ResetPasswordPage() {
   return (
     <Container className="py-14">
       <div className="mx-auto max-w-md">
-        <PageHeader title="Choose a new password" description="Pick something you don't use anywhere else." />
+        <PageHeader
+          title="设置新密码"
+          description="请设置一个未在其他地方使用过的密码。"
+        />
         <div className="mt-8">
           <ResetPasswordForm />
         </div>

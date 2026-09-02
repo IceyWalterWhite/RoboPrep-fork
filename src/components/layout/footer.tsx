@@ -4,25 +4,25 @@ import { Container } from "@/components/layout/container";
 
 const columns = [
   {
-    heading: "Product",
+    heading: "产品",
     links: [
-      { href: "/interviews", label: "Interviews" },
-      { href: "/knowledge", label: "Knowledge" },
+      { href: "/interviews", label: "面试" },
+      { href: "/knowledge", label: "知识库" },
       { href: "/coding", label: "Coding" },
     ],
   },
   {
-    heading: "Explore",
+    heading: "探索",
     links: [
-      { href: "/companies", label: "Companies" },
-      { href: "/knowledge", label: "Topics" },
+      { href: "/companies", label: "公司" },
+      { href: "/knowledge", label: "主题" },
     ],
   },
   {
-    heading: "Account",
+    heading: "账户",
     links: [
-      { href: "/sign-in", label: "Sign in" },
-      { href: "/sign-up", label: "Create account" },
+      { href: "/sign-in", label: "登录" },
+      { href: "/sign-up", label: "创建账户" },
     ],
   },
 ];
@@ -34,7 +34,7 @@ export function Footer() {
         <div className="flex max-w-xs flex-col gap-2">
           <p className="text-ink text-[0.9375rem] font-semibold">RoboPrep</p>
           <p className="text-ink-secondary text-sm leading-relaxed">
-            Master Embodied AI, one question at a time.
+            一次一题，准备具身智能面试。
           </p>
         </div>
 
@@ -63,8 +63,8 @@ export function Footer() {
 
       <Container className="border-line-subtle border-t py-6">
         <p className="text-ink-tertiary text-xs">
-          RoboPrep — interview preparation for Embodied AI roles. Content is community
-          reported; verify before you rely on it.
+          RoboPrep —
+          面向具身智能岗位的面试准备平台。内容来自社区分享，使用前请自行核实。
         </p>
       </Container>
     </footer>

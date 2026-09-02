@@ -21,7 +21,7 @@ import type { InterviewDetail } from "@/types/interview";
 import type { InterviewQuestionDraft, InterviewRoundDraft } from "@/types/ingestion";
 
 export const metadata: Metadata = {
-  title: "Publication preview",
+  title: "发布预览",
   robots: { index: false, follow: false },
 };
 
@@ -61,13 +61,15 @@ export default async function PublicationPreviewPage({
     <Container width="wide" className="py-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Badge variant="status" tone="review">Publication preview</Badge>
-          <span className="text-ink-tertiary text-sm">
-            This is how the interview will appear once published.
-          </span>
+          <Badge variant="status" tone="review">
+            发布预览
+          </Badge>
+          <span className="text-ink-tertiary text-sm">这是面经发布后的展示效果。</span>
         </div>
         <Link href={`/admin/interviews/review/${id}`}>
-          <Button variant="secondary" size="sm">← Back to review</Button>
+          <Button variant="secondary" size="sm">
+            ← 返回审核
+          </Button>
         </Link>
       </div>
 
@@ -76,9 +78,14 @@ export default async function PublicationPreviewPage({
         <div className="mt-8 flex flex-col gap-10">
           <InterviewOverview interview={preview} />
           <section aria-labelledby="rounds-heading" className="flex flex-col gap-8">
-            <h2 id="rounds-heading" className="sr-only">Interview rounds</h2>
+            <h2 id="rounds-heading" className="sr-only">
+              面试轮次
+            </h2>
             {preview.rounds.map((round) => (
-              <InterviewRound key={`${round.id ?? "generated"}-${round.roundNumber}`} round={round} />
+              <InterviewRound
+                key={`${round.id ?? "generated"}-${round.roundNumber}`}
+                round={round}
+              />
             ))}
           </section>
         </div>
@@ -100,7 +107,7 @@ function buildPreview(input: {
   sourceUrl: string | null;
 }): InterviewDetail {
   const { submissionId, draft, rounds, questions, positionHint, sourceUrl } = input;
-  if (!draft) throw new Error("draft missing");
+  if (!draft) throw new Error("缺少解析草稿");
 
   const questionsByRound = new Map<string, InterviewQuestionDraft[]>();
   for (const question of questions) {
@@ -113,7 +120,7 @@ function buildPreview(input: {
   return {
     id: `preview-${submissionId}`,
     slug: "",
-    title: positionHint ?? draft.positionTitle ?? "Interview experience",
+    title: positionHint ?? draft.positionTitle ?? "面试经历",
     company: draft.companyName
       ? { id: "preview-company", name: draft.companyName, slug: "" }
       : null,
@@ -137,7 +144,7 @@ function buildPreview(input: {
     updatedAt: draft.updatedAt,
     source: {
       type: "community",
-      label: "Community submission (preview)",
+      label: "社区投稿（预览）",
       url: sourceUrl,
       verification: "unverified",
       verifiedAt: null,
@@ -146,14 +153,17 @@ function buildPreview(input: {
     stats: {
       roundCount: rounds.length,
       questionCount: questions.length,
-      linkedQuestionCount: questions.filter((question) => question.candidateQuestionId).length,
-      codingQuestionCount: questions.filter((question) => question.questionType === "coding").length,
+      linkedQuestionCount: questions.filter((question) => question.candidateQuestionId)
+        .length,
+      codingQuestionCount: questions.filter(
+        (question) => question.questionType === "coding",
+      ).length,
       topicCount: 0,
     },
     rounds: rounds.map((round) => ({
       id: round.id,
       roundNumber: round.roundNumber ?? round.orderIndex + 1,
-      title: round.title ?? `Round ${round.orderIndex + 1}`,
+      title: round.title ?? `第 ${round.orderIndex + 1} 轮`,
       roundType: round.roundType,
       durationMinutes: round.durationMinutes,
       interviewerRole: round.interviewerRole,

@@ -11,7 +11,12 @@ import type { EvaluatorConfig } from "@/types/ml-judge";
  * config cannot smuggle instructions to the runner.
  */
 
-export const comparisonModeSchema = z.enum(["exact", "allclose", "absolute_error", "relative_error"]);
+export const comparisonModeSchema = z.enum([
+  "exact",
+  "allclose",
+  "absolute_error",
+  "relative_error",
+]);
 
 export const evaluatorConfigSchema = z
   .object({
@@ -29,8 +34,25 @@ export type RawEvaluatorConfig = z.infer<typeof evaluatorConfigSchema>;
 export const frameworkAllowlist = ["python", "numpy", "pytorch"] as const;
 
 export const importPolicy: Record<(typeof frameworkAllowlist)[number], string[]> = {
-  python: ["math", "statistics", "collections", "itertools", "functools", "heapq", "bisect"],
-  numpy: ["math", "statistics", "collections", "itertools", "functools", "heapq", "bisect", "numpy"],
+  python: [
+    "math",
+    "statistics",
+    "collections",
+    "itertools",
+    "functools",
+    "heapq",
+    "bisect",
+  ],
+  numpy: [
+    "math",
+    "statistics",
+    "collections",
+    "itertools",
+    "functools",
+    "heapq",
+    "bisect",
+    "numpy",
+  ],
   pytorch: [
     "math",
     "statistics",
@@ -58,22 +80,26 @@ export const resourceProfiles: Record<string, ResourceProfileSpec> = {
   standard_python: {
     timeoutMs: 5_000,
     memoryLimitMb: 256,
-    description: "Pure Python program judge. Tight timeout for algorithmic tasks.",
+    description: "纯 Python 程序题判题，适用于算法题的短时限环境。",
   },
   ml_cpu_small: {
     timeoutMs: 15_000,
     memoryLimitMb: 512,
-    description: "NumPy / small PyTorch CPU workloads (import + tiny tensors).",
+    description: "NumPy / 小型 PyTorch CPU 任务（包含导入和小张量计算）。",
   },
   ml_cpu_medium: {
     timeoutMs: 40_000,
     memoryLimitMb: 1024,
-    description: "PyTorch CPU workloads with gradient checks on small batches.",
+    description: "带小批量梯度检查的 PyTorch CPU 任务。",
   },
 };
 
-export function resolveResourceProfile(name: string | null | undefined): ResourceProfileSpec {
-  return resourceProfiles[name ?? "standard_python"] ?? resourceProfiles.standard_python;
+export function resolveResourceProfile(
+  name: string | null | undefined,
+): ResourceProfileSpec {
+  return (
+    resourceProfiles[name ?? "standard_python"] ?? resourceProfiles.standard_python
+  );
 }
 
 /**

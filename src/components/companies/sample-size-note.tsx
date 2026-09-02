@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  */
 export function SampleSizeNote({
   sampleSize,
-  noun = "interviews",
+  noun = "面试记录",
   className,
 }: {
   sampleSize: number;
@@ -16,11 +16,23 @@ export function SampleSizeNote({
   className?: string;
 }) {
   const band = sampleBand(sampleSize);
+  const displayNoun =
+    noun === "interviews"
+      ? "面试记录"
+      : noun === "occurrences per item minimum"
+        ? "每个项目至少出现次数"
+        : noun;
   return (
-    <p className={cn("text-ink-tertiary text-xs", band === "limited" && "text-warning-ink", className)}>
+    <p
+      className={cn(
+        "text-ink-tertiary text-xs",
+        band === "limited" && "text-warning-ink",
+        className,
+      )}
+    >
       {band === "limited"
-        ? `Limited data · ${sampleSize} ${sampleSize === 1 ? noun.replace(/s$/, "") : noun}`
-        : `Based on ${sampleSize} ${noun}`}
+        ? `数据有限 · ${sampleSize} ${displayNoun}`
+        : `基于 ${sampleSize} ${displayNoun}`}
     </p>
   );
 }

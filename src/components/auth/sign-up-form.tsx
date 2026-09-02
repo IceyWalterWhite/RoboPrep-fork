@@ -74,17 +74,16 @@ export function SignUpForm({ nextUrl = "/" }: { nextUrl?: string }) {
         <span className="bg-accent-soft text-accent flex size-11 items-center justify-center rounded-full">
           <MailCheck className="size-5" aria-hidden />
         </span>
-        <h2 className="text-ink text-[1.0625rem] font-semibold">Check your email</h2>
+        <h2 className="text-ink text-[1.0625rem] font-semibold">请查收邮箱</h2>
         <p className="text-ink-secondary text-sm leading-relaxed">
-          We sent a confirmation link to{" "}
-          <span className="text-ink font-medium">{email}</span>. Open it to activate
-          your account, then sign in.
+          我们已将确认链接发送至 <span className="text-ink font-medium">{email}</span>
+          。请打开链接激活账户，然后登录。
         </p>
         <Link
           href="/sign-in"
           className="text-accent text-sm font-medium hover:underline"
         >
-          Back to sign in
+          返回登录
         </Link>
       </div>
     );
@@ -97,13 +96,13 @@ export function SignUpForm({ nextUrl = "/" }: { nextUrl?: string }) {
           htmlFor="signup-name"
           className="text-ink-secondary text-[0.8125rem] font-medium"
         >
-          Display name <span className="text-ink-tertiary">(optional)</span>
+          显示名称 <span className="text-ink-tertiary">（可选）</span>
         </label>
         <Input
           id="signup-name"
           name="displayName"
           autoComplete="name"
-          placeholder="How should we call you?"
+          placeholder="请输入你的称呼"
           value={displayName}
           invalid={Boolean(errors.displayName)}
           aria-describedby={errors.displayName ? "signup-name-error" : undefined}
@@ -121,14 +120,14 @@ export function SignUpForm({ nextUrl = "/" }: { nextUrl?: string }) {
           htmlFor="signup-email"
           className="text-ink-secondary text-[0.8125rem] font-medium"
         >
-          Email
+          邮箱
         </label>
         <Input
           id="signup-email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="邮箱@example.com"
           value={email}
           invalid={Boolean(errors.email)}
           aria-describedby={errors.email ? "signup-email-error" : undefined}
@@ -146,14 +145,14 @@ export function SignUpForm({ nextUrl = "/" }: { nextUrl?: string }) {
           htmlFor="signup-password"
           className="text-ink-secondary text-[0.8125rem] font-medium"
         >
-          Password
+          密码
         </label>
         <Input
           id="signup-password"
           name="password"
           type="password"
           autoComplete="new-password"
-          placeholder="At least 8 characters"
+          placeholder="至少 8 个字符"
           value={password}
           invalid={Boolean(errors.password)}
           aria-describedby={errors.password ? "signup-password-error" : undefined}
@@ -171,14 +170,14 @@ export function SignUpForm({ nextUrl = "/" }: { nextUrl?: string }) {
           htmlFor="signup-confirm"
           className="text-ink-secondary text-[0.8125rem] font-medium"
         >
-          Confirm password
+          确认密码
         </label>
         <Input
           id="signup-confirm"
           name="confirmPassword"
           type="password"
           autoComplete="new-password"
-          placeholder="Re-enter your password"
+          placeholder="请再次输入密码"
           value={confirmPassword}
           invalid={Boolean(errors.confirmPassword)}
           aria-describedby={errors.confirmPassword ? "signup-confirm-error" : undefined}
@@ -201,17 +200,17 @@ export function SignUpForm({ nextUrl = "/" }: { nextUrl?: string }) {
         {pending ? (
           <>
             <Loader2 className="size-4 animate-spin" aria-hidden />
-            Creating account
+            创建中
           </>
         ) : (
-          "Create account"
+          "创建账户"
         )}
       </Button>
 
       <p className="text-ink-secondary text-center text-sm">
-        Already have an account?{" "}
+        已经有账户了？{" "}
         <Link href="/sign-in" className="text-accent font-medium hover:underline">
-          Sign in
+          登录
         </Link>
       </p>
     </form>

@@ -23,7 +23,10 @@ export class MockInterviewParser implements InterviewParserWithUsage {
     return { ...payload, usage };
   }
 
-  private parseWithUsageSync(input: ParseInterviewInput): { payload: ParsedInterviewPayload; usage: ParserUsage } {
+  private parseWithUsageSync(input: ParseInterviewInput): {
+    payload: ParsedInterviewPayload;
+    usage: ParserUsage;
+  } {
     const text = input.rawText;
 
     // Company: honor the hint when present, else the "Company:" line.
@@ -37,7 +40,9 @@ export class MockInterviewParser implements InterviewParserWithUsage {
     const year = input.hints.yearHint ?? (yearLine ? Number(yearLine[1]) : null);
 
     // Rounds: explicit "第N轮/Round N" headings; otherwise one unknown round.
-    const roundMatches = [...text.matchAll(/(?:第\s*([一二三四五六七八九十\d]+)\s*轮|Round\s*(\d+))/gi)];
+    const roundMatches = [
+      ...text.matchAll(/(?:第\s*([一二三四五六七八九十\d]+)\s*轮|Round\s*(\d+))/gi),
+    ];
     const rounds: ParsedInterviewPayload["rounds"] = [];
     if (roundMatches.length > 0) {
       const seen = new Map<number, number>();
@@ -48,7 +53,7 @@ export class MockInterviewParser implements InterviewParserWithUsage {
           seen.set(num, rounds.length);
           rounds.push({
             roundNumber: num,
-            title: `Round ${num}`,
+            title: `第 ${num} 轮`,
             roundType: "unknown",
             durationMinutes: null,
             interviewerRole: null,
@@ -75,20 +80,24 @@ export class MockInterviewParser implements InterviewParserWithUsage {
       .map((line) => line.trim())
       .filter((line) => line.length >= 4)
       .filter((line) => !/^(?:公司|Company|职位|岗位|Position|第|Round)/i.test(line))
-      .filter((line) => /[?？]|请问|为什么|如何|怎么|介绍|实现|设计|讲一讲|聊一聊/.test(line))
+      .filter((line) =>
+        /[?？]|请问|为什么|如何|怎么|介绍|实现|设计|讲一讲|聊一聊/.test(line),
+      )
       .slice(0, 50);
 
-    const questions: ParsedInterviewPayload["questions"] = questionLines.map((line, index) => ({
-      originalWording: line,
-      normalizedText: normalizeQuestionText(line) || null,
-      questionType: /实现|写|手搓|coding|算法/i.test(line)
-        ? ("coding" as const)
-        : ("knowledge" as const),
-      roundNumber: null,
-      orderIndex: index,
-      difficulty: null,
-      topicHints: [],
-    }));
+    const questions: ParsedInterviewPayload["questions"] = questionLines.map(
+      (line, index) => ({
+        originalWording: line,
+        normalizedText: normalizeQuestionText(line) || null,
+        questionType: /实现|写|手搓|coding|算法/i.test(line)
+          ? ("coding" as const)
+          : ("knowledge" as const),
+        roundNumber: null,
+        orderIndex: index,
+        difficulty: null,
+        topicHints: [],
+      }),
+    );
 
     const payload: ParsedInterviewPayload = {
       companyName,
@@ -104,13 +113,26 @@ export class MockInterviewParser implements InterviewParserWithUsage {
       questions,
     };
 
-    const usage: ParserUsage = { inputTokens: null, outputTokens: null, estimatedCost: null };
+    const usage: ParserUsage = {
+      inputTokens: null,
+      outputTokens: null,
+      estimatedCost: null,
+    };
     return { payload, usage };
   }
 }
 
 const CN_DIGITS: Record<string, number> = {
-  一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10,
+  一: 1,
+  二: 2,
+  三: 3,
+  四: 4,
+  五: 5,
+  六: 6,
+  七: 7,
+  八: 8,
+  九: 9,
+  十: 10,
 };
 
 function toArabic(raw: string): number {

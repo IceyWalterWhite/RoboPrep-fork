@@ -2,9 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { CompanyDifficulty, CompanyInterviewEmphasis, SeasonComparison } from "@/components/companies/company-insights";
+import {
+  CompanyDifficulty,
+  CompanyInterviewEmphasis,
+  SeasonComparison,
+} from "@/components/companies/company-insights";
 import { CompanyPreparationGuideView } from "@/components/companies/company-sections";
-import { TopCodingProblems, TopKnowledgeQuestions, TopTopics } from "@/components/companies/ranked-lists";
+import {
+  TopCodingProblems,
+  TopKnowledgeQuestions,
+  TopTopics,
+} from "@/components/companies/ranked-lists";
 import { SampleSizeNote } from "@/components/companies/sample-size-note";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Container } from "@/components/layout/container";
@@ -12,7 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { buildPreparationGuide } from "@/lib/companies/intelligence";
 import { roleUsesFallback } from "@/lib/companies/helpers";
-import { getCompanyBySlug, getRoleIntelligence, getCompanyTypicalStructure, getCompanyStats } from "@/lib/companies/queries";
+import {
+  getCompanyBySlug,
+  getRoleIntelligence,
+  getCompanyTypicalStructure,
+  getCompanyStats,
+} from "@/lib/companies/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -22,10 +35,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { companySlug, positionSlug } = await params;
   const [company, role] = await resolveRole(companySlug, positionSlug);
-  if (!company || !role) return { title: "Role not found" };
+  if (!company || !role) return { title: "未找到岗位" };
   return {
-    title: `${company.name} ${role.title} Interview Guide — RoboPrep`,
-    description: `What published ${company.name} ${role.title} interview records cover: topics, questions, and coding emphasis.`,
+    title: `${company.name} ${role.title} 面试指南 — RoboPrep`,
+    description: `了解 ${company.name} ${role.title} 已发布面试记录覆盖的主题、问题和 Coding 重点。`,
     alternates: { canonical: `/companies/${company.slug}/roles/${positionSlug}` },
   };
 }
@@ -52,21 +65,35 @@ export default async function CompanyRolePage({
 
   // Role guide: role relevance comes from the role's own topic share.
   const guide = buildPreparationGuide({
-    topics: fallback ? await (await import("@/lib/companies/queries")).getCompanyTopTopics(company.id, 12) : roleData.topics,
-    questions: fallback ? await (await import("@/lib/companies/queries")).getCompanyTopQuestions(company.id, 12) : roleData.questions,
+    topics: fallback
+      ? await (
+          await import("@/lib/companies/queries")
+        ).getCompanyTopTopics(company.id, 12)
+      : roleData.topics,
+    questions: fallback
+      ? await (
+          await import("@/lib/companies/queries")
+        ).getCompanyTopQuestions(company.id, 12)
+      : roleData.questions,
     codingProblems: fallback
-      ? await (await import("@/lib/companies/queries")).getCompanyTopCodingProblems(company.id, 12)
+      ? await (
+          await import("@/lib/companies/queries")
+        ).getCompanyTopCodingProblems(company.id, 12)
       : roleData.codingProblems,
     structure,
-    publishedInterviewCount: fallback ? (companyStats?.publishedInterviewCount ?? 0) : roleData.interviewCount,
-    roleRelevance: new Map(roleData.topics.map((topic) => [topic.topicId, topic.shareOfInterviews ?? 0])),
+    publishedInterviewCount: fallback
+      ? (companyStats?.publishedInterviewCount ?? 0)
+      : roleData.interviewCount,
+    roleRelevance: new Map(
+      roleData.topics.map((topic) => [topic.topicId, topic.shareOfInterviews ?? 0]),
+    ),
   });
 
   return (
     <Container width="wide" className="py-10 sm:py-14">
       <Breadcrumbs
         items={[
-          { label: "Companies", href: "/companies" },
+          { label: "公司", href: "/companies" },
           { label: company.name, href: `/companies/${company.slug}` },
           { label: role.title },
         ]}
@@ -79,58 +106,80 @@ export default async function CompanyRolePage({
           </h1>
           <p className="text-ink-secondary mt-1 text-sm">
             {roleData.interviewCount === 1
-              ? "Based on 1 published interview record"
-              : `Based on ${roleData.interviewCount} published interview records`}
+              ? "基于 1 条已发布面试记录"
+              : `基于 ${roleData.interviewCount} 条已发布面试记录`}
           </p>
           <SampleSizeNote sampleSize={roleData.interviewCount} className="mt-1" />
         </div>
         <Link href={`/companies/${company.slug}/prepare`}>
-          <Button size="sm" variant="secondary">Company-wide guide</Button>
+          <Button size="sm" variant="secondary">
+            公司整体指南
+          </Button>
         </Link>
       </header>
 
       {roleData.interviewCount === 0 ? (
         <Card className="mt-8 p-8">
-          <p className="text-ink font-medium">No published interview records for this role yet.</p>
+          <p className="text-ink font-medium">该岗位暂时还没有已发布的面试记录。</p>
           <p className="text-ink-secondary mt-1 text-sm">
-            See the{" "}
-            <Link href={`/companies/${company.slug}`} className="text-accent hover:text-accent-hover">
-              company-wide page
+            查看{" "}
+            <Link
+              href={`/companies/${company.slug}`}
+              className="text-accent hover:text-accent-hover"
+            >
+              公司整体页面
             </Link>{" "}
-            for everything published so far.
+            ，了解目前已发布的全部内容。
           </p>
         </Card>
       ) : (
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <Card className="p-6">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Most asked topics</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              高频主题
+            </h2>
             <div className="mt-3">
-              <TopTopics topics={roleData.topics} totalInterviews={roleData.interviewCount} />
+              <TopTopics
+                topics={roleData.topics}
+                totalInterviews={roleData.interviewCount}
+              />
             </div>
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Most asked knowledge questions</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              高频知识题
+            </h2>
             <div className="mt-3">
-              <TopKnowledgeQuestions questions={roleData.questions} totalInterviews={roleData.interviewCount} />
+              <TopKnowledgeQuestions
+                questions={roleData.questions}
+                totalInterviews={roleData.interviewCount}
+              />
             </div>
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Coding problems</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              Coding 题
+            </h2>
             <div className="mt-3">
               <TopCodingProblems problems={roleData.codingProblems} />
             </div>
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Interview emphasis</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              面试重点
+            </h2>
             <div className="mt-3">
               <CompanyInterviewEmphasis
                 emphasis={{
                   knowledgeOccurrences: roleData.knowledgeOccurrences,
                   codingOccurrences: roleData.codingOccurrences,
-                  unclassifiedOccurrences: roleData.totalOccurrences - roleData.knowledgeOccurrences - roleData.codingOccurrences,
+                  unclassifiedOccurrences:
+                    roleData.totalOccurrences -
+                    roleData.knowledgeOccurrences -
+                    roleData.codingOccurrences,
                   totalOccurrences: roleData.totalOccurrences,
                 }}
                 sampleSize={roleData.interviewCount}
@@ -139,28 +188,34 @@ export default async function CompanyRolePage({
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Difficulty</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              难度
+            </h2>
             <div className="mt-3">
               <CompanyDifficulty difficulty={roleData.difficulty} />
             </div>
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Seasons</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              季节
+            </h2>
             <div className="mt-3">
               <SeasonComparison seasons={roleData.seasons} />
             </div>
           </Card>
 
           <Card className="p-6 lg:col-span-2">
-            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">Preparation guide</h2>
+            <h2 className="text-ink text-sm font-semibold tracking-wide uppercase">
+              准备指南
+            </h2>
             <div className="mt-3">
               <CompanyPreparationGuideView
                 guide={guide}
                 companySlug={company.slug}
                 fallbackNote={
                   fallback
-                    ? "This role has limited data, so the guide below uses company-wide statistics."
+                    ? "该岗位的数据有限，下面的指南使用公司整体统计数据。"
                     : undefined
                 }
               />

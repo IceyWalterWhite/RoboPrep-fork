@@ -27,7 +27,7 @@ export function Tabs({
   defaultValue,
   className,
   listClassName,
-  "aria-label": ariaLabel = "Sections",
+  "aria-label": ariaLabel = "栏目",
 }: TabsProps) {
   const [active, setActive] = React.useState(
     () => defaultValue ?? items[0]?.value ?? "",

@@ -180,7 +180,7 @@ test("duplicate detection scores identical source URL strongly and explains reas
   const result = findDuplicateInterviews(input, rows);
   assert.equal(result.length, 1);
   assert.ok(result[0].score >= 0.5);
-  assert.ok(result[0].reasons.some((reason) => reason.includes("source URL")));
+  assert.ok(result[0].reasons.some((reason) => reason.includes("来源 URL")));
 });
 
 test("dissimilar submissions are not flagged", () => {
@@ -249,8 +249,8 @@ test("parser schema accepts valid payloads and rejects invalid ones", () => {
   assert.equal(valid.positionTitle, null);
   assert.equal(valid.questions[0].originalWording, "介绍一下 GRPO");
 
-  assert.throws(() => validateParsedInterview({ questions: [] }), /schema validation/);
-  assert.throws(() => validateParsedInterview({ questions: [{ normalizedText: "missing wording" }] }), /schema validation/);
+  assert.throws(() => validateParsedInterview({ questions: [] }), /结构校验/);
+  assert.throws(() => validateParsedInterview({ questions: [{ normalizedText: "missing wording" }] }), /结构校验/);
 });
 
 // ---------------------------------------------------------------------------

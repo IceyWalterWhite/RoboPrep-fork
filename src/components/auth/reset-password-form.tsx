@@ -20,18 +20,18 @@ export function ResetPasswordForm() {
     event.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError("密码至少需要 8 个字符。");
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError("两次输入的密码不一致。");
       return;
     }
     setPending(true);
     const supabase = createClient();
     const { error: updateError } = await supabase.auth.updateUser({ password });
     if (updateError) {
-      setError("The reset link may have expired. Request a new one from the sign-in page.");
+      setError("重置链接可能已过期，请从登录页面重新请求链接。");
       setPending(false);
       return;
     }
@@ -39,10 +39,15 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-line-subtle bg-surface shadow-card rounded-md border p-6">
+    <form
+      onSubmit={handleSubmit}
+      className="border-line-subtle bg-surface shadow-card rounded-md border p-6"
+    >
       <div className="flex flex-col gap-4">
         <div>
-          <label htmlFor="password" className="text-ink mb-1 block text-sm font-medium">New password</label>
+          <label htmlFor="password" className="text-ink mb-1 block text-sm font-medium">
+            新密码
+          </label>
           <Input
             id="password"
             type="password"
@@ -54,7 +59,9 @@ export function ResetPasswordForm() {
           />
         </div>
         <div>
-          <label htmlFor="confirm" className="text-ink mb-1 block text-sm font-medium">Confirm password</label>
+          <label htmlFor="confirm" className="text-ink mb-1 block text-sm font-medium">
+            确认密码
+          </label>
           <Input
             id="confirm"
             type="password"
@@ -65,12 +72,19 @@ export function ResetPasswordForm() {
           />
         </div>
       </div>
-      {error && <p role="alert" className="text-danger mt-3 text-sm">{error}</p>}
+      {error && (
+        <p role="alert" className="text-danger mt-3 text-sm">
+          {error}
+        </p>
+      )}
       <Button type="submit" disabled={pending} className="mt-4 w-full">
-        {pending ? "Saving…" : "Save new password"}
+        {pending ? "保存中…" : "保存新密码"}
       </Button>
-      <Link href="/forgot-password" className="text-ink-tertiary mt-4 block text-center text-xs">
-        Request a new reset link
+      <Link
+        href="/forgot-password"
+        className="text-ink-tertiary mt-4 block text-center text-xs"
+      >
+        重新请求重置链接
       </Link>
     </form>
   );

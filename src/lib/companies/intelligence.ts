@@ -12,7 +12,13 @@ import {
   GUIDE_TOP_TOPICS,
   TREND_MIN_TOTAL_OCCURRENCES,
 } from "./constants";
-import { isDeclining, isEmerging, occurrenceGuideScore, topicGuideScore } from "./helpers";
+import {
+  isDeclining,
+  isEmerging,
+  occurrenceGuideScore,
+  topicGuideScore,
+} from "./helpers";
+import { displaySeason } from "@/lib/interviews/helpers";
 
 /**
  * Company intelligence orchestration (Tasks 36–38, 41–44, 76): assembles
@@ -32,8 +38,20 @@ export function classifyTrends(input: {
   for (const topic of input.topics) {
     if (topic.occurrenceCount < TREND_MIN_TOTAL_OCCURRENCES) continue;
     const direction = topic.trendScore >= 0 ? "rising" : "falling";
-    if (direction === "rising" && !isEmerging({ recentCount: topic.occurrenceCount, trendScore: topic.trendScore })) continue;
-    if (direction === "falling" && !isDeclining({ recentCount: topic.occurrenceCount, olderCount: topic.occurrenceCount, trendScore: topic.trendScore })) continue;
+    if (
+      direction === "rising" &&
+      !isEmerging({ recentCount: topic.occurrenceCount, trendScore: topic.trendScore })
+    )
+      continue;
+    if (
+      direction === "falling" &&
+      !isDeclining({
+        recentCount: topic.occurrenceCount,
+        olderCount: topic.occurrenceCount,
+        trendScore: topic.trendScore,
+      })
+    )
+      continue;
     items.push({
       kind: "topic",
       id: topic.topicId,
@@ -106,11 +124,16 @@ export function buildPreparationGuide(input: {
         roleRelevance: input.roleRelevance?.get(topic.topicId),
       }),
     }))
-    .sort((a, b) => b.score - a.score || a.topic.topicName.localeCompare(b.topic.topicName))
+    .sort(
+      (a, b) => b.score - a.score || a.topic.topicName.localeCompare(b.topic.topicName),
+    )
     .slice(0, GUIDE_TOP_TOPICS)
     .map((entry) => entry.topic);
 
-  const maxQuestionInterviews = Math.max(1, ...input.questions.map((question) => question.interviewCount));
+  const maxQuestionInterviews = Math.max(
+    1,
+    ...input.questions.map((question) => question.interviewCount),
+  );
   const rankedQuestions = [...input.questions]
     .map((question) => ({
       question,
@@ -121,11 +144,16 @@ export function buildPreparationGuide(input: {
         daysSinceLastSeen: daysSince(question.lastSeenAt),
       }),
     }))
-    .sort((a, b) => b.score - a.score || a.question.title.localeCompare(b.question.title))
+    .sort(
+      (a, b) => b.score - a.score || a.question.title.localeCompare(b.question.title),
+    )
     .slice(0, GUIDE_TOP_QUESTIONS)
     .map((entry) => entry.question);
 
-  const maxCodingInterviews = Math.max(1, ...input.codingProblems.map((problem) => problem.interviewCount));
+  const maxCodingInterviews = Math.max(
+    1,
+    ...input.codingProblems.map((problem) => problem.interviewCount),
+  );
   const rankedCoding = [...input.codingProblems]
     .map((problem) => ({
       problem,
@@ -160,8 +188,13 @@ export async function getCompanyPreparationGuide(
   publishedInterviewCount: number,
 ): Promise<CompanyPreparationGuide> {
   // Lazy import keeps this module importable offline (pure helpers above).
-  const { getCompanyRoundTypeStats, getCompanyTopCodingProblems, getCompanyTopQuestions, getCompanyTopTopics, getCompanyTypicalStructure } =
-    await import("./queries");
+  const {
+    getCompanyRoundTypeStats,
+    getCompanyTopCodingProblems,
+    getCompanyTopQuestions,
+    getCompanyTopTopics,
+    getCompanyTypicalStructure,
+  } = await import("./queries");
   const [topics, questions, codingProblems, structure, roundTypes] = await Promise.all([
     getCompanyTopTopics(companyId, 12),
     getCompanyTopQuestions(companyId, 12),
@@ -181,17 +214,24 @@ export async function getCompanyPreparationGuide(
 /** Task 65/66: recent-changes summaries; every sentence maps to a metric. */
 export function recentChanges(input: {
   risingTopics: CompanyTopicStat[];
-  seasonStats: Array<{ year: number; season: string; codingShare: number | null; interviewCount: number }>;
+  seasonStats: Array<{
+    year: number;
+    season: string;
+    codingShare: number | null;
+    interviewCount: number;
+  }>;
 }): string[] {
   const statements: string[] = [];
   for (const topic of input.risingTopics.slice(0, 3)) {
     if (topic.interviewCount >= 3) {
       statements.push(
-        `${topic.topicName} appeared more frequently in recent interview records (seen in ${topic.interviewCount}).`,
+        `${topic.topicName} 在近期面试记录中出现得更频繁（出现于 ${topic.interviewCount} 条记录）。`,
       );
     }
   }
-  const seasons = [...input.seasonStats].sort((a, b) => b.year - a.year || b.season.localeCompare(a.season));
+  const seasons = [...input.seasonStats].sort(
+    (a, b) => b.year - a.year || b.season.localeCompare(a.season),
+  );
   if (seasons.length >= 2) {
     const [latest, previous] = seasons;
     if (
@@ -201,8 +241,12 @@ export function recentChanges(input: {
       previous.interviewCount >= 3 &&
       Math.abs(latest.codingShare - previous.codingShare) >= 0.1
     ) {
-      const direction = latest.codingShare > previous.codingShare ? "more common" : "less common";
-      statements.push(`Coding questions were ${direction} in ${latest.year} ${latest.season} than in ${previous.year} ${previous.season}.`);
+      const direction = latest.codingShare > previous.codingShare ? "更常见" : "较少见";
+      const latestSeason = displaySeason(latest.season) ?? "未注明季节";
+      const previousSeason = displaySeason(previous.season) ?? "未注明季节";
+      statements.push(
+        `${latest.year} 年 ${latestSeason}的 Coding 问题比 ${previous.year} 年 ${previousSeason}${direction}。`,
+      );
     }
   }
   return statements;
@@ -221,24 +265,36 @@ export function compareCompanies(
   metric: string;
   values: Array<string | null>;
 }> {
-  const topicKeys = [...new Set(companies.flatMap((company) => company.topics.map((topic) => topic.topicName)))].slice(0, 6);
+  const topicKeys = [
+    ...new Set(
+      companies.flatMap((company) => company.topics.map((topic) => topic.topicName)),
+    ),
+  ].slice(0, 6);
   const rows: Array<{ metric: string; values: Array<string | null> }> = [];
   for (const key of topicKeys) {
     rows.push({
       metric: key,
       values: companies.map((company) => {
         const topic = company.topics.find((entry) => entry.topicName === key);
-        return topic?.shareOfInterviews != null ? `${Math.round(topic.shareOfInterviews * 100)}%` : null;
+        return topic?.shareOfInterviews != null
+          ? `${Math.round(topic.shareOfInterviews * 100)}%`
+          : null;
       }),
     });
   }
   rows.push({
-    metric: "Coding share",
-    values: companies.map((company) => (company.emphasis.codingShare != null ? `${Math.round(company.emphasis.codingShare * 100)}%` : null)),
+    metric: "Coding 占比",
+    values: companies.map((company) =>
+      company.emphasis.codingShare != null
+        ? `${Math.round(company.emphasis.codingShare * 100)}%`
+        : null,
+    ),
   });
   rows.push({
-    metric: "Avg difficulty (1–3)",
-    values: companies.map((company) => company.difficulty?.averageScore?.toFixed(1) ?? null),
+    metric: "平均难度（1–3）",
+    values: companies.map(
+      (company) => company.difficulty?.averageScore?.toFixed(1) ?? null,
+    ),
   });
   return rows;
 }

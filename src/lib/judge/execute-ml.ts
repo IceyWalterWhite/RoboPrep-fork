@@ -55,10 +55,12 @@ export async function runMLCases(
   const result = await createJudgeService().evaluate(request);
   if (result.mode === "program") {
     // Unreachable: the definition already guarantees function/class mode.
-    throw new Error("expected a structured evaluation result");
+    throw new Error("评测器没有返回结构化结果");
   }
 
-  const hiddenCaseIds = cases.filter((testCase) => testCase.isHidden).map((testCase) => testCase.id);
+  const hiddenCaseIds = cases
+    .filter((testCase) => testCase.isHidden)
+    .map((testCase) => testCase.id);
   const hiddenIdSet = new Set(hiddenCaseIds);
   return {
     evaluation: redactMLEvaluation(result, hiddenIdSet),
@@ -70,9 +72,11 @@ export async function runMLCases(
 }
 
 /** Rows for coding_submission_cases; ML mode has no stdout/stderr to store. */
-export function mlSubmissionCaseRows(
-  evaluation: PublicMLEvaluationResult,
-): Array<{ test_case_id: string; status: CodingSubmissionStatus; runtime_ms: number | null }> {
+export function mlSubmissionCaseRows(evaluation: PublicMLEvaluationResult): Array<{
+  test_case_id: string;
+  status: CodingSubmissionStatus;
+  runtime_ms: number | null;
+}> {
   return evaluation.cases.map((testCase) => ({
     test_case_id: testCase.testCaseId,
     status: testCase.status,

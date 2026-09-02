@@ -4,35 +4,35 @@ import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = {
-  title: "Content & Source Policy — RoboPrep",
-  description: "How community and public-source interview content is reviewed, structured, and corrected.",
+  title: "内容与来源政策 — RoboPrep",
+  description: "了解社区和公开来源的面试内容如何审核、整理和更正。",
 };
 
 /** Week 8 Task 91: content/source/canonicalization/removal policy. */
 const SECTIONS: Array<{ heading: string; body: string[] }> = [
   {
-    heading: "Sources",
+    heading: "来源",
     body: [
-      "Interview records come from community submissions (published anonymously after review) and attributed public sources. Every published record keeps internal provenance back to its origin.",
+      "面试记录来自社区投稿（审核后匿名发布）和注明出处的公开来源。每条已发布记录都会在内部保留可追溯到原始来源的依据。",
     ],
   },
   {
-    heading: "Canonicalization",
+    heading: "标准化",
     body: [
-      "Questions extracted from interviews are matched to canonical Knowledge entries by reviewers. Original wording is always preserved on the occurrence; canonical questions are the reusable, enriched version.",
+      "从面试中提取的问题会由审核人员匹配到知识库标准条目。原始问法始终保留在出现记录中；标准问题是可复用、经过补充整理的版本。",
     ],
   },
   {
-    heading: "Verification",
+    heading: "验证",
     body: [
-      "Nothing is published automatically. Human reviewers check structure, duplicates, privacy risks, and question quality before publication, and every metric on the site shows the sample size it is based on.",
+      "所有内容都不会自动发布。人工审核人员会在发布前检查结构、重复内容、隐私风险和问题质量；网站上的每项统计都会显示其依据的样本量。",
     ],
   },
   {
-    heading: "Removal and correction",
+    heading: "移除与更正",
     body: [
-      "If you believe a record is inaccurate, violates your privacy, or duplicates another, use the Report link on the content page or the feedback form. Confirmed issues are corrected or unpublished.",
-      "Submitters can request removal of their own published submissions at any time via the same channel.",
+      "如果你认为某条记录不准确、侵犯隐私或与其他记录重复，请使用内容页面上的举报链接或反馈表单。经确认的问题会被更正或撤下。",
+      "投稿者可以随时通过相同渠道请求移除自己发布的投稿。",
     ],
   },
 ];
@@ -40,20 +40,33 @@ const SECTIONS: Array<{ heading: string; body: string[] }> = [
 export default function ContentPolicyPage() {
   return (
     <Container className="py-14">
-      <PageHeader title="Content & Source Policy" description="How interview content is sourced, reviewed, and corrected." />
+      <PageHeader
+        title="内容与来源政策"
+        description="了解面试内容如何获取、审核和更正。"
+      />
       <div className="mt-8 flex max-w-2xl flex-col gap-8">
         {SECTIONS.map((section) => (
           <section key={section.heading}>
             <h2 className="text-ink font-semibold">{section.heading}</h2>
             {section.body.map((paragraph) => (
-              <p key={paragraph.slice(0, 24)} className="text-ink-secondary mt-2 text-sm leading-relaxed">{paragraph}</p>
+              <p
+                key={paragraph.slice(0, 24)}
+                className="text-ink-secondary mt-2 text-sm leading-relaxed"
+              >
+                {paragraph}
+              </p>
             ))}
           </section>
         ))}
         <p className="text-ink-secondary text-sm">
-          Related:{" "}
-          <Link href="/privacy" className="text-accent hover:text-accent-hover">Privacy Policy</Link> ·{" "}
-          <Link href="/terms" className="text-accent hover:text-accent-hover">Terms of Use</Link>
+          相关页面：{" "}
+          <Link href="/privacy" className="text-accent hover:text-accent-hover">
+            隐私政策
+          </Link>{" "}
+          ·{" "}
+          <Link href="/terms" className="text-accent hover:text-accent-hover">
+            使用条款
+          </Link>
         </p>
       </div>
     </Container>

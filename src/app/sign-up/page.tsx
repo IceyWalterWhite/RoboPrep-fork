@@ -6,8 +6,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { safeInternalPath } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Create an account",
-  description: "Create a RoboPrep account to track your interview practice.",
+  title: "创建账户",
+  description: "创建 RoboPrep 账户，记录你的面试练习进度。",
 };
 
 export default async function SignUpPage({
@@ -25,10 +25,10 @@ export default async function SignUpPage({
     <div className="mx-auto flex w-full max-w-[26rem] flex-col gap-6 py-16 sm:py-24">
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-title text-ink font-semibold tracking-[-0.02em]">
-          Create your account
+          创建你的账户
         </h1>
         <p className="text-ink-secondary text-sm leading-relaxed">
-          Real interview experiences, essential knowledge, hands-on coding.
+          真实面试经历、核心知识与 Coding 练习。
         </p>
       </div>
 

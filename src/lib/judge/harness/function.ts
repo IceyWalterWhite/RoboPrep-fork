@@ -10,10 +10,10 @@ def resolve_entrypoint(module, name):
     target = getattr(module, name, None)
     if target is None:
         return None, {"category": "entrypoint_missing",
-                      "message": "Expected function '%s', but no callable with that name was found." % name}
+                      "message": "未找到名为 '%s' 的可调用函数。" % name}
     if not callable(target):
         return None, {"category": "entrypoint_not_callable",
-                      "message": "'%s' exists but is not callable." % name}
+                      "message": "'%s' 存在，但不可调用。" % name}
     return target, None
 
 
@@ -32,7 +32,7 @@ def signature_probe(target, payload):
         return None
     except TypeError:
         return {"category": "entrypoint_signature",
-                "message": "The entrypoint does not accept the expected arguments. Check the signature in the starter code."}
+                "message": "入口函数不接受预期参数，请检查起始代码中的函数签名。"}
 
 
 def invoke_case(entrypoint, case):

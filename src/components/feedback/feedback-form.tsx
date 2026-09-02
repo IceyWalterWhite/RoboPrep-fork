@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 const CATEGORIES = [
-  { value: "bug", label: "Something is broken" },
-  { value: "content_error", label: "Content error or inaccuracy" },
-  { value: "feature", label: "Feature suggestion" },
-  { value: "other", label: "Other" },
+  { value: "bug", label: "功能出现问题" },
+  { value: "content_error", label: "内容错误或不准确" },
+  { value: "feature", label: "功能建议" },
+  { value: "other", label: "其他" },
 ] as const;
 
 /** Week 8 Task 116: lightweight feedback form. */
@@ -33,21 +33,24 @@ export function FeedbackForm() {
       });
       const body = (await response.json()) as { ok?: boolean; error?: string };
       if (!response.ok || !body.ok) {
-        setError(body.error ?? "Something went wrong. Please try again.");
+        setError(body.error ?? "出了点问题，请稍后再试。");
         setSubmitting(false);
         return;
       }
       router.push("/?feedback=thanks");
     } catch {
-      setError("Network error. Please try again.");
+      setError("网络错误，请稍后再试。");
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-line-subtle bg-surface shadow-card max-w-xl rounded-md border p-6">
+    <form
+      onSubmit={handleSubmit}
+      className="border-line-subtle bg-surface shadow-card max-w-xl rounded-md border p-6"
+    >
       <fieldset>
-        <legend className="text-ink text-sm font-medium">What is this about?</legend>
+        <legend className="text-ink text-sm font-medium">反馈主题</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {CATEGORIES.map((entry) => (
             <button
@@ -56,7 +59,9 @@ export function FeedbackForm() {
               onClick={() => setCategory(entry.value)}
               aria-pressed={category === entry.value}
               className={`rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
-                category === entry.value ? "bg-accent text-white" : "border-line bg-surface text-ink-secondary border hover:text-ink"
+                category === entry.value
+                  ? "bg-accent text-white"
+                  : "border-line bg-surface text-ink-secondary hover:text-ink border"
               }`}
             >
               {entry.label}
@@ -66,7 +71,9 @@ export function FeedbackForm() {
       </fieldset>
 
       <div className="mt-4">
-        <label htmlFor="feedback-message" className="text-ink text-sm font-medium">Message</label>
+        <label htmlFor="feedback-message" className="text-ink text-sm font-medium">
+          消息内容
+        </label>
         <Textarea
           id="feedback-message"
           rows={6}
@@ -76,15 +83,23 @@ export function FeedbackForm() {
           maxLength={5000}
           required
           className="mt-1.5"
-          placeholder="Tell us what happened or what you'd like to see. Don't include personal contact information."
+          placeholder="请告诉我们发生了什么，或你希望看到什么改进。请勿填写个人联系方式。"
         />
         <p className="text-ink-tertiary mt-1 text-xs">{message.length}/5000</p>
       </div>
 
-      {error && <p role="alert" className="text-danger mt-3 text-sm">{error}</p>}
+      {error && (
+        <p role="alert" className="text-danger mt-3 text-sm">
+          {error}
+        </p>
+      )}
 
-      <Button type="submit" disabled={submitting || message.trim().length < 10} className="mt-4">
-        {submitting ? "Sending…" : "Send feedback"}
+      <Button
+        type="submit"
+        disabled={submitting || message.trim().length < 10}
+        className="mt-4"
+      >
+        {submitting ? "发送中…" : "发送反馈"}
       </Button>
     </form>
   );

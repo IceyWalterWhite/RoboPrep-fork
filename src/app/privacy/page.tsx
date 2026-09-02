@@ -3,45 +3,45 @@ import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — RoboPrep",
-  description: "What RoboPrep stores, who can see it, and how data is protected.",
+  title: "隐私政策 — RoboPrep",
+  description: "了解 RoboPrep 保存哪些数据、谁可以查看以及我们如何保护数据。",
 };
 
 /** Week 8 Task 89: privacy policy matching implemented behavior. */
 const SECTIONS: Array<{ heading: string; body: string[] }> = [
   {
-    heading: "Account data",
+    heading: "账户数据",
     body: [
-      "We store your email address and an optional display name to operate your account. You can update them in Settings and request account deletion at any time.",
-      "Passwords are handled exclusively by our authentication provider (Supabase Auth); RoboPrep never sees or stores your password.",
+      "我们会保存你的邮箱地址和可选的显示名称，用于运营账户。你可以在“设置”中更新这些信息，也可以随时请求删除账户。",
+      "密码完全由身份验证服务商（Supabase Auth）处理；RoboPrep 不会看到或保存你的密码。",
     ],
   },
   {
-    heading: "Coding submissions",
+    heading: "Coding 提交记录",
     body: [
-      "When you Run or Submit code, we store the source code and the judge result linked to your account. Hidden test inputs, expected outputs, and reference solutions never leave our server.",
-      "Your submissions are visible only to you. Aggregate acceptance statistics contain no user identities.",
+      "当你运行或提交代码时，我们会保存与你账户关联的源代码和判题结果。隐藏测试输入、预期输出和参考解答不会离开我们的服务器。",
+      "你的提交记录只有你自己可见。汇总后的通过率统计不包含用户身份信息。",
     ],
   },
   {
-    heading: "Interview submissions",
+    heading: "面试投稿",
     body: [
-      "Submitted interview experiences are stored as immutable raw records visible only to you and our reviewers. They are parsed by an LLM provider after contact information is removed, reviewed by a human, and published anonymously only after approval.",
-      "Published interviews never show your identity, email, raw submission text, or moderation notes. Rejection reasons are internal.",
+      "你提交的面试经历会作为不可变的原始记录保存，只有你和审核人员可见。删除联系方式后，内容会交由 LLM 服务商解析，再经人工审核；只有获批后才会匿名发布。",
+      "已发布的面试不会展示你的身份、邮箱、原始投稿文本或审核备注。拒绝原因仅供内部使用。",
     ],
   },
   {
-    heading: "Analytics and error tracking",
+    heading: "分析与错误追踪",
     body: [
-      "We collect minimal product analytics (page views and feature events) that contain no interview content, source code, or personal identifiers.",
-      "Error tracking captures error messages and request identifiers, scrubbed to remove emails, tokens, and content payloads.",
+      "我们只收集最少量的产品分析数据（页面浏览和功能事件），不包含面试内容、源代码或个人身份信息。",
+      "错误追踪会记录错误消息和请求标识符，并清除邮箱、令牌和内容载荷。",
     ],
   },
   {
-    heading: "Retention and deletion",
+    heading: "保存与删除",
     body: [
-      "Account deletion removes your profile, coding submissions, and unpublishable personal data. Published community interviews remain part of the anonymized knowledge base; you can request removal of a specific interview via the report/contact channel.",
-      "See docs/data-retention.md in the repository for operational retention windows.",
+      "删除账户会移除你的个人资料、Coding 提交记录以及无法发布的个人数据。已发布的社区面试会继续作为匿名知识库的一部分；你可以通过举报/联系渠道请求移除特定面试。",
+      "具体的运营数据保存期限请参阅仓库中的 docs/data-retention.md。",
     ],
   },
 ];
@@ -49,13 +49,21 @@ const SECTIONS: Array<{ heading: string; body: string[] }> = [
 export default function PrivacyPage() {
   return (
     <Container className="py-14">
-      <PageHeader title="Privacy Policy" description="What RoboPrep stores, who can see it, and how data is protected." />
+      <PageHeader
+        title="隐私政策"
+        description="了解 RoboPrep 保存哪些数据、谁可以查看以及我们如何保护数据。"
+      />
       <div className="mt-8 flex max-w-2xl flex-col gap-8">
         {SECTIONS.map((section) => (
           <section key={section.heading}>
             <h2 className="text-ink font-semibold">{section.heading}</h2>
             {section.body.map((paragraph) => (
-              <p key={paragraph.slice(0, 24)} className="text-ink-secondary mt-2 text-sm leading-relaxed">{paragraph}</p>
+              <p
+                key={paragraph.slice(0, 24)}
+                className="text-ink-secondary mt-2 text-sm leading-relaxed"
+              >
+                {paragraph}
+              </p>
             ))}
           </section>
         ))}

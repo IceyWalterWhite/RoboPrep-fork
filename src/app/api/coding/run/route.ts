@@ -13,7 +13,7 @@ const RUN_WINDOW_MS = 5 * 60 * 1000;
 export async function POST(request: Request) {
   if (!isFeatureEnabled("coding_judge")) {
     return Response.json(
-      { error: "The coding judge is temporarily offline. Browsing and progress are unaffected." },
+      { error: "Coding 判题服务暂时离线，浏览和进度功能不受影响。" },
       { status: 503 },
     );
   }
@@ -25,14 +25,14 @@ export async function POST(request: Request) {
   const rate = checkRateLimit(`run:${requestKey(request)}`, RUN_LIMIT, RUN_WINDOW_MS);
   if (!rate.allowed) {
     return Response.json(
-      { error: "Too many runs. Please wait before trying again." },
+      { error: "运行次数过多，请稍后再试。" },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }
 
   const problem = await getCodingProblemBySlug(parsed.data.slug);
   if (!problem) {
-    return Response.json({ error: "Coding problem not found." }, { status: 404 });
+    return Response.json({ error: "未找到 Coding 题目。" }, { status: 404 });
   }
 
   // Task 49: Run only ever touches visible examples. Structured problems run
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   }
 
   if (problem.examples.length === 0) {
-    return Response.json({ error: "This problem has no runnable examples yet." }, { status: 422 });
+    return Response.json({ error: "这道题暂时没有可运行的示例。" }, { status: 422 });
   }
 
   const judged = await judgeCases(
@@ -91,10 +91,13 @@ export async function POST(request: Request) {
 async function runStructured(sourceCode: string, slug: string) {
   const definition = await getMLJudgeDefinition(slug);
   if (!definition) {
-    return Response.json({ error: "This problem has no runnable structured tests yet." }, { status: 422 });
+    return Response.json(
+      { error: "这道题暂时没有可运行的结构化测试。" },
+      { status: 422 },
+    );
   }
   if (definition.visibleCaseIds.size === 0) {
-    return Response.json({ error: "This problem has no visible examples to run." }, { status: 422 });
+    return Response.json({ error: "这道题没有可运行的可见示例。" }, { status: 422 });
   }
   const outcome = await runMLCases(definition, sourceCode, { visibleOnly: true });
   return Response.json({
@@ -113,9 +116,9 @@ async function parseRequest(request: Request) {
     const body: unknown = await request.json();
     const result = codingExecutionRequestSchema.safeParse(body);
     if (result.success) return result;
-    return { success: false as const, error: "Invalid coding request." };
+    return { success: false as const, error: "Coding 请求无效。" };
   } catch {
-    return { success: false as const, error: "Request body must be valid JSON." };
+    return { success: false as const, error: "请求内容必须是有效的 JSON。" };
   }
 }
 

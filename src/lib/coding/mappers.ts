@@ -18,7 +18,10 @@ import type { EvaluationMetadata, PublicMLCaseResult } from "@/types/ml-judge";
 
 import { displayFor, type StructuredCaseRow } from "./structured";
 
-export type CodingProblemCatalogRow = Omit<CodingProblem, "solution_code" | "evaluator_config"> & {
+export type CodingProblemCatalogRow = Omit<
+  CodingProblem,
+  "solution_code" | "evaluator_config"
+> & {
   /** Derived public capability hints published by migration 0016. */
   public_checks?: string[] | null;
 };
@@ -46,14 +49,17 @@ export function mapCodingProblemSummary(
   };
 }
 
-export function mapCodingExample(row: CodingVisibleTestCaseRow, entrypointName: string | null = null): CodingExample {
+export function mapCodingExample(
+  row: CodingVisibleTestCaseRow,
+  entrypointName: string | null = null,
+): CodingExample {
   const structured =
     row.input_json && row.expected_json && entrypointName
       ? displayFor(row as unknown as StructuredCaseRow, entrypointName)
       : null;
   return {
     id: row.id,
-    name: row.name ?? `Example ${row.order_index + 1}`,
+    name: row.name ?? `示例 ${row.order_index + 1}`,
     inputData: row.input_data,
     expectedOutput: row.expected_output,
     weight: row.weight,
@@ -70,7 +76,14 @@ export function mapCodingExample(row: CodingVisibleTestCaseRow, entrypointName: 
   };
 }
 
-const PUBLIC_CHECKS = ["correctness", "shape", "dtype", "gradient", "exception", "performance"] as const;
+const PUBLIC_CHECKS = [
+  "correctness",
+  "shape",
+  "dtype",
+  "gradient",
+  "exception",
+  "performance",
+] as const;
 type PublicCheck = (typeof PUBLIC_CHECKS)[number];
 
 /**
@@ -84,7 +97,11 @@ type PublicCheck = (typeof PUBLIC_CHECKS)[number];
 export function mapEvaluationMetadata(
   row: Pick<
     CodingProblem,
-    "evaluation_mode" | "entrypoint_type" | "entrypoint_name" | "framework" | "resource_profile"
+    | "evaluation_mode"
+    | "entrypoint_type"
+    | "entrypoint_name"
+    | "framework"
+    | "resource_profile"
   > & { public_checks?: string[] | null },
 ): PublicEvaluationMetadata {
   return {
@@ -99,7 +116,9 @@ export function mapEvaluationMetadata(
 
 function publicChecks(raw: string[] | null | undefined): EvaluationMetadata["checks"] {
   if (!raw || raw.length === 0) return ["correctness"];
-  const filtered = raw.filter((value): value is PublicCheck => PUBLIC_CHECKS.includes(value as PublicCheck));
+  const filtered = raw.filter((value): value is PublicCheck =>
+    PUBLIC_CHECKS.includes(value as PublicCheck),
+  );
   return filtered.length > 0 ? filtered : ["correctness"];
 }
 
@@ -181,33 +200,45 @@ function parseEvaluationSummary(value: unknown): CodingSubmission["evaluationSum
     ? record.groups.flatMap((entry) => {
         if (!entry || typeof entry !== "object") return [];
         const group = entry as Record<string, unknown>;
-        if (typeof group.group !== "string" || typeof group.passed !== "number" || typeof group.total !== "number") {
+        if (
+          typeof group.group !== "string" ||
+          typeof group.passed !== "number" ||
+          typeof group.total !== "number"
+        ) {
           return [];
         }
-        return [{
-          group: group.group as EvaluationGroupSummary["group"],
-          passed: group.passed,
-          total: group.total,
-          informational: group.informational === true,
-        }];
+        return [
+          {
+            group: group.group as EvaluationGroupSummary["group"],
+            passed: group.passed,
+            total: group.total,
+            informational: group.informational === true,
+          },
+        ];
       })
     : [];
 
   const cases: PublicMLCaseResult[] = Array.isArray(record.cases)
-    ? record.cases.filter((entry): entry is PublicMLCaseResult => !!entry && typeof entry === "object")
+    ? record.cases.filter(
+        (entry): entry is PublicMLCaseResult => !!entry && typeof entry === "object",
+      )
     : [];
 
   const rawError = record.entrypointError;
   const entrypointError =
     rawError && typeof rawError === "object"
       ? {
-          category: String((rawError as Record<string, unknown>).category ?? "internal_error"),
+          category: String(
+            (rawError as Record<string, unknown>).category ?? "internal_error",
+          ),
           message: String((rawError as Record<string, unknown>).message ?? ""),
         }
       : null;
 
   const framework =
-    record.framework === "python" || record.framework === "numpy" || record.framework === "pytorch"
+    record.framework === "python" ||
+    record.framework === "numpy" ||
+    record.framework === "pytorch"
       ? (record.framework as CodingFramework)
       : null;
 

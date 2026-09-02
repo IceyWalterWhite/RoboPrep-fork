@@ -52,3 +52,14 @@
 - Implemented the Week 8 Productization + Launch scope (P0 + P1): feature flags with graceful disabled states; structured logger + redaction policy + x-request-id correlation; /api/health; admin operations/audit/system pages; global ⌘K search (API + grouped UI + bilingual aliases + shared company_aliases table); robots/sitemap/metadata+OG; onboarding/settings/password reset/account deletion; legal pages + feedback + content reports; global 404; security headers; recover-stuck-jobs and production smoke test scripts; migration 0024.
 - Wrote the ops/security documentation set (production readiness audit, environments, secret audit, analytics events, SEO audit, judge/ingestion readiness, RLS audit, backup/recovery, incident runbook, monitoring, data retention, launch checklist, rollback plan, launch-day runbook, CSP, security sign-off, architecture, technical debt, CHANGELOG, week8-status).
 - Verification: pnpm test 58/58, typecheck/lint clean, next build --webpack green with the full V1 route surface.
+
+## 2026-09-02 (Chinese UI localization)
+
+- Started a full Chinese localization pass for all user-visible web copy while preserving technical names such as Coding, VLA, Transformer, Supabase, and Vercel.
+- Created task_plan.md and findings.md for the localization scope; existing README, package.json, loader, and contributions changes remain untouched.
+- Completed localization across the public pages, shared layout, Auth, onboarding/settings, Knowledge, Interview, Coding, Companies, submission flow, Admin, legal/feedback pages, API-facing errors, dynamic enum fallbacks, and seed display data.
+- Kept route names, slugs, database enums, API fields, code samples, commands, URLs, and technical/product names unchanged; updated the two affected unit-test assertions to match the intentionally translated user-facing messages.
+- Verification after localization: `pnpm test` 58/58, `pnpm typecheck` passes, `pnpm lint` passes with the project's existing 51 warnings and 0 errors, changed TypeScript/TSX files pass Prettier check, `git diff --check` passes, and `pnpm exec next build --webpack` passes all routes.
+- 补充检查发现独立的 `supabase/seed_week5_function_problems.sql` 也会在手动导入后提供网页题目数据；已为其中 33 道结构化 Coding 题、6 个题单和 65 个可见测试名称追加中文展示更新，并保留 slug、UUID、代码和技术公式。
+- 最终验证：`pnpm test` 58/58、`pnpm typecheck`、TypeScript/TSX Prettier 检查、`git diff --check` 和 `pnpm exec next build --webpack` 全部通过；`pnpm lint` 仍为 0 errors / 51 个项目既有 warnings。
+- 进一步收紧未知状态、枚举、地区、评测分组、导入事件和任务错误的中文兜底，并隐藏审核页可能出现的原始英文内部错误；改动后再次通过全部上述检查。

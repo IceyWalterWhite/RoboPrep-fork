@@ -13,16 +13,16 @@ export function CodingSearch({ params }: { params: CodingSearchParams }) {
       <Input
         name="q"
         defaultValue={params.q ?? ""}
-        placeholder="Search coding problems…"
-        aria-label="Search coding problems"
-        className="pl-9 pr-20"
+        placeholder="搜索 Coding 题目…"
+        aria-label="搜索 Coding 题目"
+        className="pr-20 pl-9"
       />
       {hiddenFields(params)}
       <button
         type="submit"
         className="text-accent hover:text-accent-hover absolute top-1/2 right-3 -translate-y-1/2 text-sm font-medium"
       >
-        Search
+        搜索
       </button>
     </form>
   );
@@ -31,11 +31,19 @@ export function CodingSearch({ params }: { params: CodingSearchParams }) {
 function hiddenFields(params: CodingSearchParams) {
   return (
     <>
-      {params.difficulty ? <input type="hidden" name="difficulty" value={params.difficulty} /> : null}
-      {params.category ? <input type="hidden" name="category" value={params.category} /> : null}
+      {params.difficulty ? (
+        <input type="hidden" name="difficulty" value={params.difficulty} />
+      ) : null}
+      {params.category ? (
+        <input type="hidden" name="category" value={params.category} />
+      ) : null}
       {params.topic ? <input type="hidden" name="topic" value={params.topic} /> : null}
-      {params.status ? <input type="hidden" name="status" value={params.status} /> : null}
-      {params.sort !== "recommended" ? <input type="hidden" name="sort" value={params.sort} /> : null}
+      {params.status ? (
+        <input type="hidden" name="status" value={params.status} />
+      ) : null}
+      {params.sort !== "recommended" ? (
+        <input type="hidden" name="sort" value={params.sort} />
+      ) : null}
     </>
   );
 }

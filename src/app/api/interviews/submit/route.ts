@@ -4,7 +4,11 @@ import {
   SUBMISSION_RATE_LIMIT,
   SUBMISSION_RATE_WINDOW_MS,
 } from "@/lib/ingestion/constants";
-import { createSubmission, enqueueParseJob, runParseJob } from "@/lib/ingestion/service";
+import {
+  createSubmission,
+  enqueueParseJob,
+  runParseJob,
+} from "@/lib/ingestion/service";
 import { submissionRequestSchema } from "@/lib/ingestion/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isFeatureEnabled } from "@/lib/feature-flags";
@@ -21,19 +25,23 @@ export async function POST(request: Request) {
   const requestId = getRequestId(request);
   if (!isFeatureEnabled("interview_submission")) {
     return Response.json(
-      { error: "Interview submissions are temporarily paused. Please check back soon." },
+      { error: "面试投稿暂时暂停，请稍后再来查看。" },
       { status: 503, headers: { "x-request-id": requestId } },
     );
   }
   const user = await getCurrentUser();
   if (!user) {
-    return Response.json({ error: "Sign in to submit an interview experience." }, { status: 401 });
+    return Response.json({ error: "请登录后提交面试经历。" }, { status: 401 });
   }
 
-  const rate = checkRateLimit(`interview-submit:${user.id}`, SUBMISSION_RATE_LIMIT, SUBMISSION_RATE_WINDOW_MS);
+  const rate = checkRateLimit(
+    `interview-submit:${user.id}`,
+    SUBMISSION_RATE_LIMIT,
+    SUBMISSION_RATE_WINDOW_MS,
+  );
   if (!rate.allowed) {
     return Response.json(
-      { error: "Too many submissions right now. Please try again later." },
+      { error: "当前投稿次数过多，请稍后再试。" },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }
@@ -42,14 +50,14 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid request body." }, { status: 400 });
+    return Response.json({ error: "请求内容无效。" }, { status: 400 });
   }
 
   const parsed = submissionRequestSchema.safeParse(body);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
     return Response.json(
-      { error: first?.message ?? "Invalid submission.", field: first?.path.join(".") },
+      { error: first?.message ?? "投稿内容无效。", field: first?.path.join(".") },
       { status: 400 },
     );
   }
@@ -57,7 +65,7 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
   if (!admin) {
-    return Response.json({ error: "The submission service is not configured." }, { status: 503 });
+    return Response.json({ error: "投稿服务尚未配置。" }, { status: 503 });
   }
 
   const submission = await createSubmission(admin, user.id, {
@@ -79,7 +87,7 @@ export async function POST(request: Request) {
     const job = await enqueueParseJob(admin, submission.id);
     await runParseJob(admin, job.id);
   } catch (error) {
-    parseError = error instanceof Error ? error.message : "parse failed";
+    parseError = error instanceof Error ? error.message : "解析失败";
   }
 
   return Response.json({ id: submission.id, parseError }, { status: 201 });

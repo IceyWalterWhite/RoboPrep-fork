@@ -17,10 +17,10 @@ export interface NavbarUser {
 }
 
 const navLinks = [
-  { href: "/interviews", label: "Interview" },
-  { href: "/knowledge", label: "Knowledge" },
+  { href: "/interviews", label: "面试" },
+  { href: "/knowledge", label: "知识库" },
   { href: "/coding", label: "Coding" },
-  { href: "/companies", label: "Companies" },
+  { href: "/companies", label: "公司" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
@@ -54,7 +54,7 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
           RoboPrep
         </Link>
 
-        <nav aria-label="Main" className="hidden md:block">
+        <nav aria-label="主导航" className="hidden md:block">
           <ul className="flex items-center gap-1">
             {navLinks.map((link) => (
               <li key={link.href}>
@@ -84,7 +84,7 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
             )}
           >
             <Search className="size-4" aria-hidden />
-            Search
+            搜索
             <kbd className="border-line bg-surface-muted text-ink-tertiary ml-2 rounded-[4px] border px-1.5 py-0.5 font-sans text-[0.6875rem]">
               ⌘K
             </kbd>
@@ -93,7 +93,7 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            aria-label="Search"
+            aria-label="搜索"
             className="text-ink-secondary hover:bg-surface-sunken hover:text-ink rounded-sm p-2 transition-colors sm:hidden"
           >
             <Search className="size-5" aria-hidden />
@@ -106,7 +106,7 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
               href="/sign-in"
               className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
-              Sign in
+              登录
             </Link>
           )}
 
@@ -115,7 +115,7 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
             onClick={() => setMobileOpen((value) => !value)}
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? "关闭菜单" : "打开菜单"}
             className="text-ink-secondary hover:bg-surface-sunken hover:text-ink rounded-sm p-2 transition-colors md:hidden"
           >
             {mobileOpen ? (
@@ -130,7 +130,7 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
       {mobileOpen ? (
         <nav
           id="mobile-nav"
-          aria-label="Mobile"
+          aria-label="移动端导航"
           className="border-line-subtle bg-surface border-t md:hidden"
         >
           <ul className="max-w-wide mx-auto flex flex-col px-5 py-2 sm:px-8">
@@ -158,8 +158,8 @@ export function Navbar({ user }: { user: NavbarUser | null }) {
       <Modal
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
-        title="Search"
-        description="Search across interview experiences, knowledge questions and coding tasks."
+        title="搜索"
+        description="搜索面试经历、知识题和 Coding 题。"
       >
         <GlobalSearch onClose={() => setSearchOpen(false)} />
       </Modal>

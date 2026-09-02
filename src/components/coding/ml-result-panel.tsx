@@ -38,7 +38,7 @@ export function MLResultPanel({
   cases,
   runtimeMs,
   entrypointError,
-  title = "Submission result",
+  title = "提交结果",
 }: MLResultPanelProps) {
   const accepted = status === "accepted";
   const requiredGroups = groups.filter((group) => !group.informational);
@@ -55,14 +55,23 @@ export function MLResultPanel({
             )}
             {title}
           </CardTitle>
-          <Badge variant="status" tone={accepted ? "published" : status === "internal_error" ? "rejected" : "review"}>
+          <Badge
+            variant="status"
+            tone={
+              accepted
+                ? "published"
+                : status === "internal_error"
+                  ? "rejected"
+                  : "review"
+            }
+          >
             {JUDGE_STATUS_LABELS[status]}
           </Badge>
         </div>
         <p className="text-ink-secondary text-sm">
           {requiredGroups.length > 0
-            ? `${sumPassed(requiredGroups)} of ${sumTotal(requiredGroups)} required checks passed.`
-            : "No required checks were reported for this submission."}
+            ? `必需检查项通过 ${sumPassed(requiredGroups)} / ${sumTotal(requiredGroups)}。`
+            : "这次提交没有报告必需检查项。"}
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -73,21 +82,32 @@ export function MLResultPanel({
           </p>
         ) : null}
 
-        {entrypointError ? <EntrypointError category={entrypointError.category} message={entrypointError.message} /> : null}
+        {entrypointError ? (
+          <EntrypointError
+            category={entrypointError.category}
+            message={entrypointError.message}
+          />
+        ) : null}
 
         {groups.length > 0 ? (
-          <section aria-label="Results by category">
+          <section aria-label="按类别查看结果">
             <ul className="border-line-subtle divide-line-subtle divide-y rounded-sm border">
-              {groups.map((group) => <GroupRow key={group.group} group={group} />)}
+              {groups.map((group) => (
+                <GroupRow key={group.group} group={group} />
+              ))}
             </ul>
           </section>
         ) : null}
 
         {cases.length > 0 ? (
-          <section aria-label="Per-test results" className="flex flex-col gap-3">
-            <h3 className="text-ink text-sm font-semibold">Test details</h3>
+          <section aria-label="逐项测试结果" className="flex flex-col gap-3">
+            <h3 className="text-ink text-sm font-semibold">测试详情</h3>
             {cases.map((testCase, index) => (
-              <MLCheckResults key={testCase.testCaseId} testCase={testCase} index={index} />
+              <MLCheckResults
+                key={testCase.testCaseId}
+                testCase={testCase}
+                index={index}
+              />
             ))}
           </section>
         ) : null}
@@ -109,21 +129,27 @@ function GroupRow({ group }: { group: PublicMLEvaluationResult["groups"][number]
           <CircleAlert className="text-danger-ink size-4 shrink-0" aria-hidden />
         )}
         {groupLabel(group.group)}
-        {group.informational ? <span className="text-ink-tertiary text-xs">(informational)</span> : null}
+        {group.informational ? (
+          <span className="text-ink-tertiary text-xs">（仅供参考）</span>
+        ) : null}
       </span>
       <span
         className={cn(
           "text-xs font-medium tabular-nums",
-          group.informational ? "text-ink-tertiary" : allPassed ? "text-success-ink" : "text-danger-ink",
+          group.informational
+            ? "text-ink-tertiary"
+            : allPassed
+              ? "text-success-ink"
+              : "text-danger-ink",
         )}
       >
         {group.passed} / {group.total}
         <span className="sr-only">
           {group.informational
-            ? " informational checks passed"
+            ? " 个参考检查项通过"
             : allPassed
-              ? " checks passed"
-              : " checks passed, some failed"}
+              ? " 个检查项通过"
+              : " 个检查项通过，部分失败"}
         </span>
       </span>
     </li>
@@ -132,8 +158,13 @@ function GroupRow({ group }: { group: PublicMLEvaluationResult["groups"][number]
 
 function EntrypointError({ category, message }: { category: string; message: string }) {
   return (
-    <div role="alert" className="border-danger/30 bg-danger/10 rounded-sm border px-4 py-3">
-      <p className="text-danger-ink text-sm font-semibold">{entrypointErrorTitle(category)}</p>
+    <div
+      role="alert"
+      className="border-danger/30 bg-danger/10 rounded-sm border px-4 py-3"
+    >
+      <p className="text-danger-ink text-sm font-semibold">
+        {entrypointErrorTitle(category)}
+      </p>
       <p className="text-ink-secondary mt-1 text-sm leading-relaxed">{message}</p>
     </div>
   );
@@ -145,26 +176,26 @@ function entrypointErrorTitle(category: string): string {
     case "entrypoint_missing":
     case "entrypoint_not_callable":
     case "entrypoint_signature":
-      return "Entrypoint error";
+      return "入口错误";
     case "syntax_error":
-      return "Syntax error";
+      return "语法错误";
     case "timeout":
-      return "Time limit exceeded";
+      return "超出时间限制";
     case "forbidden_import":
-      return "Import not allowed";
+      return "不允许导入";
     case "memory_limit":
-      return "Memory limit exceeded";
+      return "超出内存限制";
     case "output_limit":
-      return "Output limit exceeded";
+      return "超出输出限制";
     case "runtime_error":
-      return "Runtime error";
+      return "运行错误";
     default:
-      return "Evaluation unavailable";
+      return "评测不可用";
   }
 }
 
 function groupLabel(group: CodingTestGroup): string {
-  return CODING_TEST_GROUP_LABELS[group] ?? group;
+  return CODING_TEST_GROUP_LABELS[group] ?? "其他检查";
 }
 
 function sumPassed(groups: PublicMLEvaluationResult["groups"]): number {

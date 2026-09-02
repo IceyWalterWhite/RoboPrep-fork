@@ -28,7 +28,14 @@ export function buildMetadata(input: {
       url,
       siteName: "RoboPrep",
       type: "website",
-      images: [{ url: `${base}/og.png`, width: 1200, height: 630, alt: "RoboPrep — Embodied AI interview preparation" }],
+      images: [
+        {
+          url: `${base}/og.png`,
+          width: 1200,
+          height: 630,
+          alt: "RoboPrep — 具身智能面试准备",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",

@@ -58,8 +58,18 @@ export const inputJsonSchema = callSpecSchema.extend({
 
 const expectedJsonSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("value"), value: structuredValueSchema }).strict(),
-  z.object({ kind: z.literal("shape"), shape: z.array(z.number().int().min(0)).max(8) }).strict(),
-  z.object({ kind: z.literal("dtype"), dtype: z.enum(["float32", "float64", "int64", "bool"]) }).strict(),
+  z
+    .object({
+      kind: z.literal("shape"),
+      shape: z.array(z.number().int().min(0)).max(8),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("dtype"),
+      dtype: z.enum(["float32", "float64", "int64", "bool"]),
+    })
+    .strict(),
   z
     .object({
       kind: z.literal("exception"),
@@ -72,13 +82,20 @@ const expectedJsonSchema = z.discriminatedUnion("kind", [
       kind: z.literal("gradient"),
       forward: structuredValueSchema.nullish(),
       gradients: z
-        .array(z.object({ label: z.string().min(1).max(80), value: tensorSpecSchema }).strict())
+        .array(
+          z
+            .object({ label: z.string().min(1).max(80), value: tensorSpecSchema })
+            .strict(),
+        )
         .min(1)
         .max(16),
     })
     .strict(),
   z
-    .object({ kind: z.literal("performance"), max_runtime_ms: z.number().positive().nullish() })
+    .object({
+      kind: z.literal("performance"),
+      max_runtime_ms: z.number().positive().nullish(),
+    })
     .strict(),
 ]);
 
@@ -110,13 +127,18 @@ export interface ParsedStructuredCase {
  * integrity check surfaces those separately so a single bad row cannot break
  * an entire submission.
  */
-export function parseStructuredCase(row: StructuredCaseRow, entrypointName: string): ParsedStructuredCase | null {
+export function parseStructuredCase(
+  row: StructuredCaseRow,
+  entrypointName: string,
+): ParsedStructuredCase | null {
   if (!row.input_json || !row.expected_json) return null;
   const input = inputJsonSchema.safeParse(row.input_json);
   const expected = expectedJsonSchema.safeParse(row.expected_json);
   if (!input.success || !expected.success) return null;
 
-  const testType: CodingTestType = row.test_type ?? (expected.data.kind === "value" ? "value" : testTypeFor(expected.data.kind));
+  const testType: CodingTestType =
+    row.test_type ??
+    (expected.data.kind === "value" ? "value" : testTypeFor(expected.data.kind));
   const testGroup: CodingTestGroup = row.test_group ?? defaultGroupFor(testType);
   const note = readNote(row.metadata);
 
@@ -134,7 +156,10 @@ export function parseStructuredCase(row: StructuredCaseRow, entrypointName: stri
       weight: row.weight,
       isHidden: row.is_hidden,
       seed: input.data.seed ?? null,
-      metadata: (row.metadata && typeof row.metadata === "object" ? (row.metadata as Record<string, unknown>) : {}),
+      metadata:
+        row.metadata && typeof row.metadata === "object"
+          ? (row.metadata as Record<string, unknown>)
+          : {},
     },
     display: {
       call: renderCall(entrypointName, input.data),
@@ -161,11 +186,25 @@ function toExpectedValue(value: StructuredExpectedJson): ExpectedValue {
     case "gradient":
       return {
         kind: "gradient",
-        forward: value.forward ?? { type: "tensor", shape: [], dtype: "float32", values: [], requires_grad: false },
-        gradients: value.gradients.map((entry) => ({ label: entry.label, value: entry.value })),
+        forward: value.forward ?? {
+          type: "tensor",
+          shape: [],
+          dtype: "float32",
+          values: [],
+          requires_grad: false,
+        },
+        gradients: value.gradients.map((entry) => ({
+          label: entry.label,
+          value: entry.value,
+        })),
       };
     case "performance":
-      return { kind: "performance", ...(value.max_runtime_ms === null || value.max_runtime_ms === undefined ? {} : { maxRuntimeMs: value.max_runtime_ms }) };
+      return {
+        kind: "performance",
+        ...(value.max_runtime_ms === null || value.max_runtime_ms === undefined
+          ? {}
+          : { maxRuntimeMs: value.max_runtime_ms }),
+      };
   }
 }
 
@@ -208,12 +247,16 @@ function readNote(metadata: unknown): string | null {
 export function renderCall(entrypointName: string, input: StructuredInputJson): string {
   const parts = [
     ...input.args.map(renderValue),
-    ...Object.entries(input.kwargs).map(([key, value]) => `${key}=${renderValue(value)}`),
+    ...Object.entries(input.kwargs).map(
+      ([key, value]) => `${key}=${renderValue(value)}`,
+    ),
   ];
   if (input.construct) {
     const constructParts = [
       ...input.construct.args.map(renderValue),
-      ...Object.entries(input.construct.kwargs).map(([key, value]) => `${key}=${renderValue(value)}`),
+      ...Object.entries(input.construct.kwargs).map(
+        ([key, value]) => `${key}=${renderValue(value)}`,
+      ),
     ];
     const method = input.method ?? "forward";
     return `${entrypointName}(${constructParts.join(", ")}).${method}(${parts.join(", ")})`;
@@ -226,15 +269,17 @@ export function renderExpected(expected: StructuredExpectedJson): string {
     case "value":
       return renderValue(expected.value);
     case "shape":
-      return `shape ${formatShape(expected.shape)}`;
+      return `形状 ${formatShape(expected.shape)}`;
     case "dtype":
-      return `dtype ${expected.dtype}`;
+      return `数据类型 ${expected.dtype}`;
     case "exception":
-      return `raises ${expected.exception_type}`;
+      return `抛出 ${expected.exception_type}`;
     case "gradient":
-      return `gradients for ${expected.gradients.map((entry) => entry.label).join(", ")}`;
+      return `梯度：${expected.gradients.map((entry) => entry.label).join("、")}`;
     case "performance":
-      return expected.max_runtime_ms ? `under ${expected.max_runtime_ms} ms` : "runtime recorded";
+      return expected.max_runtime_ms
+        ? `低于 ${expected.max_runtime_ms} ms`
+        : "已记录运行时间";
   }
 }
 
@@ -250,16 +295,21 @@ export function renderValue(value: EvaluatorInputValue): string {
   if (typeof value === "boolean") return value ? "True" : "False";
   if (Array.isArray(value)) {
     const rendered = value.slice(0, 12).map(renderValue).join(", ");
-    return value.length > 12 ? `[${rendered}, … ${value.length} items]` : `[${rendered}]`;
+    return value.length > 12 ? `[${rendered}，… ${value.length} 项]` : `[${rendered}]`;
   }
-  const entries = Object.entries(value as Record<string, EvaluatorInputValue>).slice(0, 8);
-  const rendered = entries.map(([key, entry]) => `${key}: ${renderValue(entry)}`).join(", ");
+  const entries = Object.entries(value as Record<string, EvaluatorInputValue>).slice(
+    0,
+    8,
+  );
+  const rendered = entries
+    .map(([key, entry]) => `${key}: ${renderValue(entry)}`)
+    .join(", ");
   return `{${rendered}}`;
 }
 
 function renderTensor(spec: TensorSpec): string {
   const base = `tensor${formatShape(spec.shape)}${spec.dtype === "float32" ? "" : `, ${spec.dtype}`}`;
-  if (spec.values.length === 0) return `${base} (zeros)`;
+  if (spec.values.length === 0) return `${base}（全零）`;
   if (spec.values.length <= 8) return `${base} ${JSON.stringify(spec.values)}`;
   return `${base} [${spec.values.slice(0, 6).map(formatNumber).join(", ")}, …]`;
 }
@@ -286,7 +336,10 @@ export interface StructuredDisplay {
   note: string | null;
 }
 
-export function displayFor(row: StructuredCaseRow, entrypointName: string): StructuredDisplay | null {
+export function displayFor(
+  row: StructuredCaseRow,
+  entrypointName: string,
+): StructuredDisplay | null {
   const parsed = parseStructuredCase(row, entrypointName);
   return parsed ? parsed.display : null;
 }

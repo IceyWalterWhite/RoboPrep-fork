@@ -15,25 +15,31 @@ export function ExampleCases({ examples }: { examples: CodingExample[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Examples</CardTitle>
+        <CardTitle>示例</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {examples.map((example, index) => (
           <div key={example.id} className="border-line-subtle rounded-sm border p-4">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <p className="text-ink text-sm font-medium">{example.name || `Example ${index + 1}`}</p>
+              <p className="text-ink text-sm font-medium">
+                {example.name || `示例 ${index + 1}`}
+              </p>
               {example.structured ? (
                 <span className="bg-surface-sunken text-ink-tertiary rounded-full px-2 py-0.5 text-xs">
-                  {CODING_TEST_GROUP_LABELS[example.structured.testGroup] ?? example.structured.testGroup}
+                  {CODING_TEST_GROUP_LABELS[example.structured.testGroup] ?? "其他检查"}
                 </span>
               ) : null}
             </div>
             {example.structured ? (
-              <StructuredCase call={example.structured.call} expected={example.structured.expected} note={example.structured.note} />
+              <StructuredCase
+                call={example.structured.call}
+                expected={example.structured.expected}
+                note={example.structured.note}
+              />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                <CodeBlock label="Input" value={example.inputData} />
-                <CodeBlock label="Expected output" value={example.expectedOutput} />
+                <CodeBlock label="输入" value={example.inputData} />
+                <CodeBlock label="预期输出" value={example.expectedOutput} />
               </div>
             )}
           </div>
@@ -43,14 +49,24 @@ export function ExampleCases({ examples }: { examples: CodingExample[] }) {
   );
 }
 
-function StructuredCase({ call, expected, note }: { call: string; expected: string; note: string | null }) {
+function StructuredCase({
+  call,
+  expected,
+  note,
+}: {
+  call: string;
+  expected: string;
+  note: string | null;
+}) {
   return (
     <div className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        <CodeBlock label="Call" value={call} />
-        <CodeBlock label="Expected" value={expected} />
+        <CodeBlock label="调用" value={call} />
+        <CodeBlock label="预期结果" value={expected} />
       </div>
-      {note ? <p className="text-ink-tertiary text-xs leading-relaxed">{note}</p> : null}
+      {note ? (
+        <p className="text-ink-tertiary text-xs leading-relaxed">{note}</p>
+      ) : null}
     </div>
   );
 }
@@ -60,7 +76,7 @@ function CodeBlock({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-ink-tertiary mb-1 text-xs">{label}</p>
       <pre className="bg-surface-sunken text-ink-secondary min-h-10 overflow-x-auto rounded-sm px-3 py-2 font-mono text-xs leading-5 whitespace-pre-wrap">
-        {value || "(empty)"}
+        {value || "（空）"}
       </pre>
     </div>
   );

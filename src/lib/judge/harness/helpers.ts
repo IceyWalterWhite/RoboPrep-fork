@@ -76,7 +76,7 @@ def build_tensor(spec, framework):
     for dim in shape:
         count *= dim
     if values and len(values) != count:
-        raise HarnessError("tensor spec values do not fill the declared shape")
+        raise HarnessError("张量规格中的值无法填满声明的形状")
     np_dtype = NUMPY_DTYPES[dtype_name]
     if values:
         arr = np.asarray(values, dtype=np_dtype).reshape(shape)
@@ -90,7 +90,7 @@ def build_tensor(spec, framework):
         if tensor.dtype in (torch.float32, torch.float64):
             tensor.requires_grad_(True)
         else:
-            raise HarnessError("only float tensors support requires_grad")
+            raise HarnessError("只有浮点张量支持 requires_grad")
     return tensor
 
 
@@ -195,16 +195,16 @@ def numeric_comparison(received, expected, mode, rtol, atol):
     flat_numbers(expected, expected_flat)
     if len(actual_flat) != len(expected_flat):
         return {"passed": False, "max_abs_error": None,
-                "message": "element count differs (expected %d, received %d)" % (len(expected_flat), len(actual_flat))}
+                "message": "元素数量不同（预期 %d，实际 %d）" % (len(expected_flat), len(actual_flat))}
     if len(expected_flat) == 0:
         return {"passed": True, "max_abs_error": None, "message": None}
     max_abs_error = 0.0
     for actual, expected_value in zip(actual_flat, expected_flat):
         if math.isnan(actual) or math.isnan(expected_value):
-            return {"passed": False, "max_abs_error": None, "message": "NaN is not an acceptable value"}
+            return {"passed": False, "max_abs_error": None, "message": "NaN 不是可接受的值"}
         if math.isinf(actual) or math.isinf(expected_value):
             if actual != expected_value:
-                return {"passed": False, "max_abs_error": None, "message": "non-finite value mismatch"}
+                return {"passed": False, "max_abs_error": None, "message": "非有限值不匹配"}
             continue
         abs_error = abs(actual - expected_value)
         if abs_error > max_abs_error:
@@ -268,14 +268,14 @@ def exception_check(error, expected):
     pattern = expected.get("message_pattern")
     if error is None:
         return {"passed": False, "raised_type": None, "expected_type": expected_type,
-                "message": "expected an exception but the call succeeded"}
+                "message": "预期抛出异常，但调用成功了"}
     raised_type = type(error).__name__
     if raised_type != expected_type:
         return {"passed": False, "raised_type": raised_type, "expected_type": expected_type,
-                "message": "raised %s instead of %s" % (raised_type, expected_type)}
+                "message": "实际抛出 %s，而不是 %s" % (raised_type, expected_type)}
     if pattern and not re.search(pattern, str(error)):
         return {"passed": False, "raised_type": raised_type, "expected_type": expected_type,
-                "message": "exception message did not match the expected pattern"}
+                "message": "异常消息不符合预期模式"}
     return {"passed": True, "raised_type": raised_type, "expected_type": expected_type, "message": None}
 
 
@@ -292,13 +292,13 @@ def gradient_check(forward_output, expected, input_handles):
     result = {"passed": False, "forward_passed": forward_ok, "tensors": []}
     if not forward_ok:
         result["tensors"].append({"label": "output", "passed": False, "missing": True, "max_abs_error": None})
-        result["message"] = "backward requires the forward output to be a single tensor"
+        result["message"] = "反向传播需要前向输出为单个张量"
         return result
     try:
         torch = lazy_torch()
         forward_output.backward(torch.ones_like(forward_output))
     except Exception as exc:  # noqa: BLE001
-        result["message"] = "backward failed: %s: %s" % (type(exc).__name__, str(exc)[:200])
+        result["message"] = "反向传播失败：%s：%s" % (type(exc).__name__, str(exc)[:200])
         return result
     computed = {}
     for handle in input_handles:
@@ -322,6 +322,6 @@ def gradient_check(forward_output, expected, input_handles):
         })
     result["passed"] = all(item["passed"] for item in result["tensors"])
     if not result["passed"] and result.get("message") is None:
-        result["message"] = "gradients failed hidden checks"
+        result["message"] = "梯度检查未通过"
     return result
 `;

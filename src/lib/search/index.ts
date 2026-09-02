@@ -9,7 +9,8 @@ import { COMPANY_ALIAS_FALLBACK, rankResults } from "./ranking";
  * the per-group limit are applied in-process. Published content only.
  */
 
-export type SearchGroup = "knowledge" | "interviews" | "coding" | "companies" | "topics";
+export type SearchGroup =
+  "knowledge" | "interviews" | "coding" | "companies" | "topics";
 
 export interface SearchHit {
   title: string;
@@ -25,11 +26,11 @@ export interface GroupedSearchResults {
 }
 
 export const SEARCH_GROUP_LABELS: Record<SearchGroup, string> = {
-  knowledge: "Knowledge",
-  interviews: "Interviews",
+  knowledge: "知识库",
+  interviews: "面试",
   coding: "Coding",
-  companies: "Companies",
-  topics: "Topics",
+  companies: "公司",
+  topics: "主题",
 };
 
 const MAX_QUERY_LENGTH = 60;
@@ -72,7 +73,11 @@ export async function globalSearch(
       .select("id, name, slug, description")
       .or(`name.ilike.${pattern},description.ilike.${pattern}`)
       .limit(15),
-    supabase.from("topics").select("id, name, slug, description").ilike("name", pattern).limit(15),
+    supabase
+      .from("topics")
+      .select("id, name, slug, description")
+      .ilike("name", pattern)
+      .limit(15),
   ]);
 
   // Company alias resolution (Task 114): table first, code fallback second.
@@ -90,7 +95,9 @@ export async function globalSearch(
     const idList = [...aliasCompanyIds];
     const nameQuery = supabase.from("companies").select("id, name, slug, description");
     const { data: aliasCompanies } =
-      idList.length > 0 ? await nameQuery.in("id", idList) : await nameQuery.in("slug", fallbackCompanies);
+      idList.length > 0
+        ? await nameQuery.in("id", idList)
+        : await nameQuery.in("slug", fallbackCompanies);
     aliasCompanyNames = (aliasCompanies ?? []).map((company) => company.name);
   }
 
@@ -105,13 +112,18 @@ export async function globalSearch(
       id: `alias-${index}`,
       title: name,
       slug: name.toLowerCase().replace(/\s+/g, "-"),
-      subtitle: "Company (alias match)",
+      subtitle: "公司（别名匹配）",
     })),
   ];
 
   const knowledgeHits: SearchHit[] = rankResults(
     query,
-    (questions.data ?? []).map((row) => ({ id: row.id, title: row.title, slug: row.slug, subtitle: row.summary })),
+    (questions.data ?? []).map((row) => ({
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      subtitle: row.summary,
+    })),
   ).map((entry) => ({
     title: entry.item.title,
     subtitle: entry.item.subtitle,
@@ -123,7 +135,7 @@ export async function globalSearch(
     query,
     (interviews.data ?? []).map((row) => ({
       id: row.id,
-      title: row.title ?? row.slug ?? "Interview",
+      title: row.title ?? row.slug ?? "面试",
       slug: row.slug ?? "",
       subtitle: row.year ? String(row.year) : null,
     })),
@@ -138,7 +150,12 @@ export async function globalSearch(
 
   const codingHits: SearchHit[] = rankResults(
     query,
-    (problems.data ?? []).map((row) => ({ id: row.id, title: row.title, slug: row.slug, subtitle: row.category })),
+    (problems.data ?? []).map((row) => ({
+      id: row.id,
+      title: row.title,
+      slug: row.slug,
+      subtitle: row.category,
+    })),
   ).map((entry) => ({
     title: entry.item.title,
     subtitle: entry.item.subtitle,
@@ -146,16 +163,23 @@ export async function globalSearch(
     group: "coding" as const,
   }));
 
-  const companyHitsRanked: SearchHit[] = rankResults(query, companyHits).map((entry) => ({
-    title: entry.item.title,
-    subtitle: entry.item.subtitle,
-    href: `/companies/${entry.item.slug}`,
-    group: "companies" as const,
-  }));
+  const companyHitsRanked: SearchHit[] = rankResults(query, companyHits).map(
+    (entry) => ({
+      title: entry.item.title,
+      subtitle: entry.item.subtitle,
+      href: `/companies/${entry.item.slug}`,
+      group: "companies" as const,
+    }),
+  );
 
   const topicHits: SearchHit[] = rankResults(
     query,
-    (topics.data ?? []).map((row) => ({ id: row.id, title: row.name, slug: row.slug, subtitle: row.description })),
+    (topics.data ?? []).map((row) => ({
+      id: row.id,
+      title: row.name,
+      slug: row.slug,
+      subtitle: row.description,
+    })),
   ).map((entry) => ({
     title: entry.item.title,
     subtitle: entry.item.subtitle,
@@ -164,11 +188,31 @@ export async function globalSearch(
   }));
 
   const grouped: Array<{ group: SearchGroup; label: string; hits: SearchHit[] }> = [
-    { group: "knowledge", label: SEARCH_GROUP_LABELS.knowledge, hits: knowledgeHits.slice(0, limit) },
-    { group: "interviews", label: SEARCH_GROUP_LABELS.interviews, hits: interviewHits.slice(0, limit) },
-    { group: "coding", label: SEARCH_GROUP_LABELS.coding, hits: codingHits.slice(0, limit) },
-    { group: "companies", label: SEARCH_GROUP_LABELS.companies, hits: companyHitsRanked.slice(0, limit) },
-    { group: "topics", label: SEARCH_GROUP_LABELS.topics, hits: topicHits.slice(0, limit) },
+    {
+      group: "knowledge",
+      label: SEARCH_GROUP_LABELS.knowledge,
+      hits: knowledgeHits.slice(0, limit),
+    },
+    {
+      group: "interviews",
+      label: SEARCH_GROUP_LABELS.interviews,
+      hits: interviewHits.slice(0, limit),
+    },
+    {
+      group: "coding",
+      label: SEARCH_GROUP_LABELS.coding,
+      hits: codingHits.slice(0, limit),
+    },
+    {
+      group: "companies",
+      label: SEARCH_GROUP_LABELS.companies,
+      hits: companyHitsRanked.slice(0, limit),
+    },
+    {
+      group: "topics",
+      label: SEARCH_GROUP_LABELS.topics,
+      hits: topicHits.slice(0, limit),
+    },
   ];
 
   const total = grouped.reduce((sum, entry) => sum + entry.hits.length, 0);

@@ -65,7 +65,7 @@ export function UserMenu({ email, displayName }: UserMenuProps) {
           "hover:bg-accent/15 transition-colors",
           "focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2",
         )}
-        aria-label={`Account menu for ${displayName ?? email}`}
+        aria-label={`${displayName ?? email} 的账户菜单`}
       >
         {initialsFor(email, displayName)}
       </button>
@@ -91,7 +91,7 @@ export function UserMenu({ email, displayName }: UserMenuProps) {
               className="text-ink-secondary hover:bg-surface-muted hover:text-ink flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors disabled:opacity-60"
             >
               <LogOut className="size-4" aria-hidden />
-              {signingOut ? "Signing out…" : "Sign out"}
+              {signingOut ? "退出中…" : "退出登录"}
             </button>
           </div>
         </div>

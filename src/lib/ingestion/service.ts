@@ -9,6 +9,7 @@ import {
   PROMPT_VERSION,
   SUBMISSION_MAX_CHARS,
   SUBMISSION_MIN_CHARS,
+  USER_FACING_STATUS,
 } from "@/lib/ingestion/constants";
 import type { Database } from "@/types/database";
 import type {
@@ -23,7 +24,10 @@ import type {
 
 import { errorFromUnknown, IngestionError } from "./errors";
 import { matchCompany } from "./matching/company";
-import { findDuplicateInterviews, type DuplicateDetectionRow } from "./matching/interview-duplicates";
+import {
+  findDuplicateInterviews,
+  type DuplicateDetectionRow,
+} from "./matching/interview-duplicates";
 import { detectCodingSignal } from "./matching/topics";
 import { moderationFlags, redactContactInfo } from "./moderation";
 import { normalizeQuestionText } from "./normalize";
@@ -75,13 +79,19 @@ export async function createSubmission(
   userId: string | null,
   input: CreateSubmissionInput,
 ): Promise<InterviewSubmission> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const rawText = input.rawText.trim();
   if (rawText.length < SUBMISSION_MIN_CHARS) {
-    throw new IngestionError("size_limit", `Interview experience must be at least ${SUBMISSION_MIN_CHARS} characters.`);
+    throw new IngestionError(
+      "size_limit",
+      `面试经历至少需要 ${SUBMISSION_MIN_CHARS} 个字符。`,
+    );
   }
   if (rawText.length > SUBMISSION_MAX_CHARS) {
-    throw new IngestionError("size_limit", `Interview experience must be at most ${SUBMISSION_MAX_CHARS} characters.`);
+    throw new IngestionError(
+      "size_limit",
+      `面试经历最多只能有 ${SUBMISSION_MAX_CHARS} 个字符。`,
+    );
   }
 
   if (input.sourceUrl) {
@@ -105,12 +115,12 @@ export async function createSubmission(
     })
     .select("*")
     .single();
-  if (error) throw new Error(`submission create failed: ${error.message}`);
+  if (error) throw new Error(`创建投稿失败：${error.message}`);
 
   await recordEvent(admin, {
     submissionId: data.id,
     eventType: "submission_created",
-    message: "raw submission stored",
+    message: "原始投稿已保存",
     metadata: { submission_type: data.submission_type, char_count: rawText.length },
   });
 
@@ -126,10 +136,10 @@ export function assertSafeSourceUrl(url: string): void {
   try {
     parsed = new URL(url);
   } catch {
-    throw new IngestionError("unknown", "Source URL is not a valid URL.");
+    throw new IngestionError("unknown", "来源 URL 无效。");
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new IngestionError("unknown", "Only http(s) source URLs are accepted.");
+    throw new IngestionError("unknown", "来源 URL 仅接受 http(s)。");
   }
 }
 
@@ -141,7 +151,7 @@ export async function enqueueParseJob(
   admin: SupabaseClient<Database> | null,
   submissionId: string,
 ): Promise<IngestionJob> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const parser = createParser();
   const job = await createJob(admin, {
     submissionId,
@@ -151,7 +161,12 @@ export async function enqueueParseJob(
     parserVersion: PARSER_VERSION,
     promptVersion: PROMPT_VERSION,
   });
-  await recordEvent(admin, { submissionId, jobId: job.id, eventType: "parse_started", message: "parse job queued" });
+  await recordEvent(admin, {
+    submissionId,
+    jobId: job.id,
+    eventType: "parse_started",
+    message: "解析任务已排队",
+  });
   return job;
 }
 
@@ -160,23 +175,36 @@ export async function runParseJob(
   admin: SupabaseClient<Database> | null,
   jobId: string,
 ): Promise<{ job: IngestionJob; submissionStatus: SubmissionStatus }> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const job = await getJob(admin, jobId);
-  if (!job) throw new Error(`job ${jobId} not found`);
+  if (!job) throw new Error(`未找到任务 ${jobId}`);
   if (job.status === "succeeded") return { job, submissionStatus: "parsed" };
   if (job.attemptCount >= job.maxAttempts) {
-    throw new IngestionError("unknown", `job ${jobId} exhausted its ${job.maxAttempts} attempts`);
+    throw new IngestionError(
+      "unknown",
+      `任务 ${jobId} 已用尽 ${job.maxAttempts} 次尝试。`,
+    );
   }
 
   const submission = await getSubmission(admin, job.submissionId);
-  if (!submission) throw new Error(`submission ${job.submissionId} not found`);
+  if (!submission) throw new Error(`未找到投稿 ${job.submissionId}`);
 
   const attempt = job.attemptCount + 1;
   const startedAt = new Date().toISOString();
-  await updateJob(admin, job.id, { status: "running", attemptCount: attempt, startedAt, errorCode: null, errorMessage: null });
+  await updateJob(admin, job.id, {
+    status: "running",
+    attemptCount: attempt,
+    startedAt,
+    errorCode: null,
+    errorMessage: null,
+  });
   await transitionSubmission(admin, submission.id, "processing");
 
-  let usage: ParserUsage = { inputTokens: null, outputTokens: null, estimatedCost: null };
+  let usage: ParserUsage = {
+    inputTokens: null,
+    outputTokens: null,
+    estimatedCost: null,
+  };
   try {
     // Moderate before parsing: redacted text goes to the provider so contact
     // info is not shipped to an external LLM (Tasks 40/41).
@@ -256,14 +284,20 @@ export async function retryParseJob(
   admin: SupabaseClient<Database> | null,
   jobId: string,
 ): Promise<{ job: IngestionJob; submissionStatus: SubmissionStatus }> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const job = await getJob(admin, jobId);
-  if (!job) throw new Error(`job ${jobId} not found`);
-  if (job.status === "running") throw new IngestionError("unknown", "job is already running");
+  if (!job) throw new Error(`未找到任务 ${jobId}`);
+  if (job.status === "running")
+    throw new IngestionError("unknown", "任务已经在运行中。");
   if (job.attemptCount >= job.maxAttempts) {
-    throw new IngestionError("unknown", `job reached its maximum of ${job.maxAttempts} attempts`);
+    throw new IngestionError("unknown", `任务已达到最大尝试次数 ${job.maxAttempts}。`);
   }
-  await recordEvent(admin, { submissionId: job.submissionId, jobId: job.id, eventType: "parse_retry", message: "manual retry" });
+  await recordEvent(admin, {
+    submissionId: job.submissionId,
+    jobId: job.id,
+    eventType: "parse_retry",
+    message: "手动重试",
+  });
   return runParseJob(admin, jobId);
 }
 
@@ -272,9 +306,13 @@ export async function resetToReview(
   admin: SupabaseClient<Database> | null,
   submissionId: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   await transitionSubmission(admin, submissionId, "needs_review");
-  await recordEvent(admin, { submissionId, eventType: "review_opened", message: "reset to review" });
+  await recordEvent(admin, {
+    submissionId,
+    eventType: "review_opened",
+    message: "重置为待审核",
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -286,16 +324,21 @@ export async function approveDraft(
   submissionId: string,
   reviewerId: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const draft = await getDraftBySubmission(admin, submissionId);
-  if (!draft) throw new Error("No parsed draft exists for this submission.");
+  if (!draft) throw new Error("这份投稿没有解析草稿。");
   await transitionSubmission(admin, submissionId, "approved");
   if (draft.status === "parsed") {
     await updateDraftStatus(admin, draft.id, "approved");
   }
   const task = await createReviewTask(admin, { submissionId, draftId: draft.id });
   await updateReviewTask(admin, task.id, { status: "in_review" });
-  await recordEvent(admin, { submissionId, eventType: "draft_approved", message: "approved by reviewer", metadata: { reviewerId } });
+  await recordEvent(admin, {
+    submissionId,
+    eventType: "draft_approved",
+    message: "审核员已批准",
+    metadata: { reviewerId },
+  });
 }
 
 export async function rejectSubmission(
@@ -305,18 +348,22 @@ export async function rejectSubmission(
   reason: RejectionReason,
   note?: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const submission = await getSubmission(admin, submissionId);
-  if (!submission) throw new Error("Submission not found.");
+  if (!submission) throw new Error("未找到投稿。");
   await transitionSubmission(admin, submission.id, "rejected");
   const internalNote = `reason: ${reason}${note ? ` — ${note}` : ""}`;
   await updateSubmissionReview(admin, submissionId, { reviewNotes: internalNote });
   const task = await createReviewTask(admin, { submissionId });
-  await updateReviewTask(admin, task.id, { status: "rejected", completedAt: new Date().toISOString(), reviewNotes: internalNote });
+  await updateReviewTask(admin, task.id, {
+    status: "rejected",
+    completedAt: new Date().toISOString(),
+    reviewNotes: internalNote,
+  });
   await recordEvent(admin, {
     submissionId,
     eventType: "submission_rejected",
-    message: "rejected by reviewer",
+    message: "审核员已拒绝",
     metadata: { reviewerId, reason },
   });
 }
@@ -327,10 +374,18 @@ export async function blockSubmission(
   reviewerId: string,
   note?: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const task = await createReviewTask(admin, { submissionId });
-  await updateReviewTask(admin, task.id, { status: "blocked", reviewNotes: note ?? null });
-  await recordEvent(admin, { submissionId, eventType: "review_blocked", message: note ?? "blocked", metadata: { reviewerId } });
+  await updateReviewTask(admin, task.id, {
+    status: "blocked",
+    reviewNotes: note ?? null,
+  });
+  await recordEvent(admin, {
+    submissionId,
+    eventType: "review_blocked",
+    message: note ?? "已封禁",
+    metadata: { reviewerId },
+  });
 }
 
 export async function returnToReview(
@@ -339,11 +394,20 @@ export async function returnToReview(
   reviewerId: string,
   note?: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   await transitionSubmission(admin, submissionId, "needs_review");
   const task = await createReviewTask(admin, { submissionId });
-  await updateReviewTask(admin, task.id, { status: "open", completedAt: null, reviewNotes: note ?? null });
-  await recordEvent(admin, { submissionId, eventType: "review_opened", message: note ?? "returned to review", metadata: { reviewerId } });
+  await updateReviewTask(admin, task.id, {
+    status: "open",
+    completedAt: null,
+    reviewNotes: note ?? null,
+  });
+  await recordEvent(admin, {
+    submissionId,
+    eventType: "review_opened",
+    message: note ?? "返回审核",
+    metadata: { reviewerId },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -362,13 +426,18 @@ export async function publishDraft(
   reviewerId: string,
   overrides: { companyId?: string | null; positionId?: string | null } = {},
 ): Promise<PublishOutcome> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
-  await recordEvent(admin, { submissionId, eventType: "publish_started", message: "publish requested", metadata: { reviewerId } });
+  if (!admin) throw new Error("数据导入服务未配置。");
+  await recordEvent(admin, {
+    submissionId,
+    eventType: "publish_started",
+    message: "已请求发布",
+    metadata: { reviewerId },
+  });
 
   const draft = await getDraftBySubmission(admin, submissionId);
-  if (!draft) throw new Error("No parsed draft exists for this submission.");
+  if (!draft) throw new Error("这份投稿没有解析草稿。");
   if (draft.status !== "approved") {
-    throw new IngestionError("unknown", "Draft must be approved before publishing.");
+    throw new IngestionError("unknown", "发布前必须先批准草稿。");
   }
 
   // Idempotency (Task 36): already published → return existing interview.
@@ -390,7 +459,7 @@ export async function publishDraft(
   const companyMatch = matchCompany(draft.companyName, companies ?? []);
   const companyId = overrides.companyId ?? companyMatch.companyId;
   if (!companyId) {
-    throw new IngestionError("unknown", "Publish requires a resolved company. Resolve the company first.");
+    throw new IngestionError("unknown", "发布需要已匹配的公司，请先完成公司匹配。");
   }
 
   // Publish validation gate (Task 77).
@@ -399,27 +468,35 @@ export async function publishDraft(
     ["accepted", "edited", "new_canonical"].includes(question.reviewStatus),
   );
   if (accepted.length === 0) {
-    throw new IngestionError("unknown", "At least one accepted question is required to publish.");
+    throw new IngestionError("unknown", "发布至少需要一个已接受的问题。");
   }
   if (draft.year !== null && (draft.year < 1990 || draft.year > 2100)) {
-    throw new IngestionError("unknown", "Draft year is outside the valid range.");
+    throw new IngestionError("unknown", "草稿年份超出有效范围。");
   }
 
-  const slug = await generateInterviewSlug(admin, draft.companyName ?? "company", draft.positionTitle ?? "interview");
+  const slug = await generateInterviewSlug(
+    admin,
+    draft.companyName ?? "company",
+    draft.positionTitle ?? "interview",
+  );
   const { data: interviewId, error } = await admin.rpc("publish_interview_draft", {
     p_draft_id: draft.id,
     p_company_id: companyId,
     p_position_id: overrides.positionId ?? null,
     p_slug: slug,
   });
-  if (error) throw new Error(`publish failed: ${error.message}`);
+  if (error) throw new Error(`发布失败：${error.message}`);
 
   // Task 13: refresh the company's stats cache after publish (the DB trigger
   // from migration 0023 also covers this; both paths are idempotent).
   const { refreshCompanyStats } = await import("@/lib/companies/refresh");
   await refreshCompanyStats(companyId).catch(() => undefined);
 
-  const { data: interview } = await admin.from("interviews").select("slug").eq("id", interviewId).maybeSingle();
+  const { data: interview } = await admin
+    .from("interviews")
+    .select("slug")
+    .eq("id", interviewId)
+    .maybeSingle();
   return { interviewId, slug: interview?.slug ?? slug, alreadyPublished: false };
 }
 
@@ -434,7 +511,7 @@ export async function acceptCanonicalMatch(
   score: number | null,
   reviewerId: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   await updateQuestionDraft(admin, questionDraftId, {
     candidateQuestionId: questionId,
     matchScore: score,
@@ -443,7 +520,7 @@ export async function acceptCanonicalMatch(
   await recordEvent(admin, {
     submissionId: await submissionIdForQuestion(admin, questionDraftId),
     eventType: "question_accepted",
-    message: "canonical match accepted",
+    message: "已接受标准问题匹配",
     metadata: { reviewerId, questionDraftId, questionId },
   });
 }
@@ -451,10 +528,17 @@ export async function acceptCanonicalMatch(
 export async function createNewCanonical(
   admin: SupabaseClient<Database> | null,
   questionDraftId: string,
-  canonical: { title: string; slug?: string; questionType: string; difficulty?: string; summary?: string; topicIds?: string[] },
+  canonical: {
+    title: string;
+    slug?: string;
+    questionType: string;
+    difficulty?: string;
+    summary?: string;
+    topicIds?: string[];
+  },
   reviewerId: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   await updateQuestionDraft(admin, questionDraftId, {
     candidateQuestionId: null,
     newCanonical: canonical,
@@ -463,7 +547,7 @@ export async function createNewCanonical(
   await recordEvent(admin, {
     submissionId: await submissionIdForQuestion(admin, questionDraftId),
     eventType: "question_new_canonical",
-    message: "new canonical question drafted",
+    message: "新的标准问题草稿已创建",
     metadata: { reviewerId, questionDraftId },
   });
 }
@@ -474,12 +558,15 @@ export async function rejectQuestion(
   reviewerId: string,
   note?: string,
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
-  await updateQuestionDraft(admin, questionDraftId, { reviewStatus: "rejected", reviewNotes: note ?? null });
+  if (!admin) throw new Error("数据导入服务未配置。");
+  await updateQuestionDraft(admin, questionDraftId, {
+    reviewStatus: "rejected",
+    reviewNotes: note ?? null,
+  });
   await recordEvent(admin, {
     submissionId: await submissionIdForQuestion(admin, questionDraftId),
     eventType: "question_rejected",
-    message: note ?? "question rejected",
+    message: note ?? "问题已拒绝",
     metadata: { reviewerId, questionDraftId },
   });
 }
@@ -489,7 +576,7 @@ export async function setQuestionSuggestions(
   questionDraftId: string,
   suggestions: TopicSuggestion[],
 ): Promise<void> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   await updateQuestionDraft(admin, questionDraftId, { topicSuggestions: suggestions });
 }
 
@@ -500,9 +587,14 @@ export async function setQuestionSuggestions(
  */
 export async function getCanonicalCandidates(
   admin: SupabaseClient<Database> | null,
-  questionDraft: { normalizedText: string | null; originalWording: string; questionType: string | null; topicSuggestions: TopicSuggestion[] },
+  questionDraft: {
+    normalizedText: string | null;
+    originalWording: string;
+    questionType: string | null;
+    topicSuggestions: TopicSuggestion[];
+  },
 ): Promise<Awaited<ReturnType<typeof rankCanonicalCandidates>>> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const [{ data: canonicalQuestions }, { data: topicLinks }] = await Promise.all([
     admin
       .from("questions")
@@ -529,9 +621,13 @@ export async function getCanonicalCandidates(
 
   return rankCanonicalCandidates(
     {
-      normalizedText: questionDraft.normalizedText ?? normalizeQuestionText(questionDraft.originalWording),
+      normalizedText:
+        questionDraft.normalizedText ??
+        normalizeQuestionText(questionDraft.originalWording),
       questionType: questionDraft.questionType,
-      topicHints: questionDraft.topicSuggestions.map((suggestion) => suggestion.topicId),
+      topicHints: questionDraft.topicSuggestions.map(
+        (suggestion) => suggestion.topicId,
+      ),
     },
     candidates,
     { candidateTopicIds: topicsByQuestion },
@@ -551,7 +647,7 @@ export async function detectDuplicatesForDraft(
   admin: SupabaseClient<Database> | null,
   submissionId: string,
 ): Promise<{ score: number; candidates: ReturnType<typeof findDuplicateInterviews> }> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const submission = await getSubmission(admin, submissionId);
   const draft = await getDraftBySubmission(admin, submissionId);
   if (!submission || !draft) return { score: 0, candidates: [] };
@@ -575,11 +671,15 @@ export async function detectDuplicatesForDraft(
   ]);
 
   const { data: companyRows } = await admin.from("companies").select("id, name, slug");
-  const companyById = new Map((companyRows ?? []).map((company) => [company.id, company]));
+  const companyById = new Map(
+    (companyRows ?? []).map((company) => [company.id, company]),
+  );
 
   const rows: DuplicateDetectionRow[] = [];
   for (const interview of published.data ?? []) {
-    const company = interview.company_id ? companyById.get(interview.company_id) : undefined;
+    const company = interview.company_id
+      ? companyById.get(interview.company_id)
+      : undefined;
     rows.push({
       interviewId: interview.id,
       submissionId: null,
@@ -624,13 +724,17 @@ export async function detectDuplicatesForDraft(
   );
 
   const topScore = candidates[0]?.score ?? 0;
-  const task = await createReviewTask(admin, { submissionId, draftId: draft.id, duplicateScore: topScore });
+  const task = await createReviewTask(admin, {
+    submissionId,
+    draftId: draft.id,
+    duplicateScore: topScore,
+  });
   await updateReviewTask(admin, task.id, { duplicateScore: topScore });
   if (candidates.length > 0) {
     await recordEvent(admin, {
       submissionId,
       eventType: "duplicate_flagged",
-      message: `${candidates.length} duplicate candidate(s)`,
+      message: `发现 ${candidates.length} 个可能重复的候选项`,
       metadata: { topScore, candidates: candidates.slice(0, 3) },
     });
   }
@@ -649,7 +753,7 @@ export async function getCanonicalizationMetrics(
   rejectedQuestions: number;
   unresolvedQuestions: number;
 }> {
-  if (!admin) throw new Error("The ingestion service is not configured.");
+  if (!admin) throw new Error("数据导入服务未配置。");
   const draft = await getDraftBySubmission(admin, submissionId);
   if (!draft) {
     return {
@@ -664,12 +768,22 @@ export async function getCanonicalizationMetrics(
   const questions = await listQuestionDrafts(admin, draft.id);
   return {
     questionCount: questions.length,
-    autoMatchCandidateCount: questions.filter((question) => question.candidateQuestionId).length,
-    highConfidenceMatches: questions.filter((question) => (question.matchScore ?? 0) >= 0.9).length,
-    manualNewCanonicals: questions.filter((question) => question.reviewStatus === "new_canonical").length,
-    rejectedQuestions: questions.filter((question) => question.reviewStatus === "rejected").length,
+    autoMatchCandidateCount: questions.filter(
+      (question) => question.candidateQuestionId,
+    ).length,
+    highConfidenceMatches: questions.filter(
+      (question) => (question.matchScore ?? 0) >= 0.9,
+    ).length,
+    manualNewCanonicals: questions.filter(
+      (question) => question.reviewStatus === "new_canonical",
+    ).length,
+    rejectedQuestions: questions.filter(
+      (question) => question.reviewStatus === "rejected",
+    ).length,
     unresolvedQuestions: questions.filter(
-      (question) => question.reviewStatus === "pending" || (!question.candidateQuestionId && question.reviewStatus !== "rejected"),
+      (question) =>
+        question.reviewStatus === "pending" ||
+        (!question.candidateQuestionId && question.reviewStatus !== "rejected"),
     ).length,
   };
 }
@@ -718,9 +832,13 @@ async function persistDraftChildren(
   for (const question of parsed.questions) {
     await insertQuestionDraft(admin, {
       draftId,
-      roundDraftId: question.roundNumber !== null ? (roundIdByNumber.get(question.roundNumber) ?? null) : null,
+      roundDraftId:
+        question.roundNumber !== null
+          ? (roundIdByNumber.get(question.roundNumber) ?? null)
+          : null,
       originalWording: question.originalWording,
-      normalizedText: question.normalizedText ?? normalizeQuestionText(question.originalWording),
+      normalizedText:
+        question.normalizedText ?? normalizeQuestionText(question.originalWording),
       questionType: question.questionType,
       difficulty: question.difficulty,
       matchConfidence: null,
@@ -738,11 +856,24 @@ async function finalizeSuccessfulParse(
   jobId: string,
 ): Promise<void> {
   const finishedAt = new Date().toISOString();
-  await updateJob(admin, jobId, { status: "succeeded", finishedAt, errorCode: null, errorMessage: null });
-  await recordEvent(admin, { submissionId: submission.id, jobId, eventType: "parse_succeeded", message: "draft persisted" });
+  await updateJob(admin, jobId, {
+    status: "succeeded",
+    finishedAt,
+    errorCode: null,
+    errorMessage: null,
+  });
+  await recordEvent(admin, {
+    submissionId: submission.id,
+    jobId,
+    eventType: "parse_succeeded",
+    message: "草稿已保存",
+  });
   // Moderation flags are stored privately on the submission (Task 40).
   const flags = moderationFlags(submission.rawText);
-  await updateSubmissionReview(admin, submission.id, { moderationFlags: flags, processedAt: finishedAt });
+  await updateSubmissionReview(admin, submission.id, {
+    moderationFlags: flags,
+    processedAt: finishedAt,
+  });
   await transitionSubmission(admin, submission.id, "parsed");
   await createReviewTask(admin, { submissionId: submission.id, draftId });
 }
@@ -773,7 +904,7 @@ async function resetDraft(
       published_interview_id: null,
     })
     .eq("id", draftId);
-  if (error) throw new Error(`draft reset failed: ${error.message}`);
+  if (error) throw new Error(`重置草稿失败：${error.message}`);
   void usage;
 }
 
@@ -786,7 +917,7 @@ async function updateDraftStatus(
     .from("interview_drafts")
     .update({ status })
     .eq("id", draftId);
-  if (error) throw new Error(`draft status update failed: ${error.message}`);
+  if (error) throw new Error(`更新草稿状态失败：${error.message}`);
 }
 
 async function transitionSubmission(
@@ -795,27 +926,32 @@ async function transitionSubmission(
   next: SubmissionStatus,
 ): Promise<void> {
   const submission = await getSubmission(admin, submissionId);
-  if (!submission) throw new Error(`submission ${submissionId} not found`);
+  if (!submission) throw new Error(`未找到投稿 ${submissionId}`);
   if (submission.status === next) return;
   if (!canTransition(submission.status, next)) {
-    throw new Error(`invalid submission transition ${submission.status} → ${next}`);
+    throw new Error(
+      `投稿状态无法从 ${USER_FACING_STATUS[submission.status].label} 变更为 ${USER_FACING_STATUS[next].label}`,
+    );
   }
   await updateSubmissionStatus(admin, submissionId, next);
 }
 
-async function submissionIdForQuestion(admin: SupabaseClient<Database>, questionDraftId: string): Promise<string> {
+async function submissionIdForQuestion(
+  admin: SupabaseClient<Database>,
+  questionDraftId: string,
+): Promise<string> {
   const { data: question, error: questionError } = await admin
     .from("interview_question_drafts")
     .select("draft_id")
     .eq("id", questionDraftId)
     .maybeSingle();
-  if (questionError || !question) throw new Error(`question draft ${questionDraftId} not found`);
+  if (questionError || !question) throw new Error(`未找到问题草稿 ${questionDraftId}`);
   const { data: draft, error: draftError } = await admin
     .from("interview_drafts")
     .select("submission_id")
     .eq("id", question.draft_id)
     .maybeSingle();
-  if (draftError || !draft) throw new Error(`draft ${question.draft_id} not found`);
+  if (draftError || !draft) throw new Error(`未找到草稿 ${question.draft_id}`);
   return draft.submission_id;
 }
 
@@ -827,7 +963,11 @@ async function generateInterviewSlug(
   const base = slugify(`${company} ${position}`);
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
-    const { data } = await admin.from("interviews").select("id").eq("slug", candidate).maybeSingle();
+    const { data } = await admin
+      .from("interviews")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
     if (!data) return candidate;
   }
   return `${base}-${Date.now().toString(36)}`;

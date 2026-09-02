@@ -8,8 +8,8 @@ import { SubmissionForm } from "@/components/interviews/submission-form";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export const metadata: Metadata = {
-  title: "Submit an interview",
-  description: "Share a real Embodied AI interview experience for review and publication.",
+  title: "提交面试经历",
+  description: "分享真实的具身智能面试经历，供审核和发布。",
 };
 
 export default async function SubmitInterviewPage({
@@ -26,16 +26,16 @@ export default async function SubmitInterviewPage({
   return (
     <Container className="py-14">
       <PageHeader
-        title="Share an interview experience"
-        description="Tell us about a real interview. Our team reviews every submission before anything is published."
+        title="分享面试经历"
+        description="告诉我们一次真实的面试经历。所有投稿都会经过团队审核后再发布。"
       />
       {isFeatureEnabled("interview_submission") ? (
         <SubmissionForm />
       ) : (
         <div className="border-line-subtle bg-surface shadow-card mt-8 max-w-2xl rounded-md border p-8">
-          <p className="text-ink font-medium">Interview submissions are temporarily paused</p>
+          <p className="text-ink font-medium">面试投稿暂时暂停</p>
           <p className="text-ink-secondary mt-1 text-sm leading-relaxed">
-            Browsing interviews, knowledge, coding and companies is unaffected. Please check back soon.
+            浏览面试、知识库、Coding 和公司的功能不受影响，请稍后再来查看。
           </p>
         </div>
       )}

@@ -7,7 +7,7 @@ export function Pagination({
   page,
   totalPages,
   makeHref,
-  label = "Pagination",
+  label = "分页",
 }: {
   page: number;
   totalPages: number;
@@ -23,13 +23,17 @@ export function Pagination({
           href={makeHref(page - 1)}
           className={buttonVariants({ variant: "secondary", size: "sm" })}
         >
-          Previous
+          上一页
         </Link>
       ) : null}
-      <ol className="flex items-center gap-1" aria-label="Pages">
+      <ol className="flex items-center gap-1" aria-label="页码">
         {pages.map((item, index) =>
           item === "ellipsis" ? (
-            <li key={`ellipsis-${index}`} aria-hidden className="text-ink-tertiary px-2">
+            <li
+              key={`ellipsis-${index}`}
+              aria-hidden
+              className="text-ink-tertiary px-2"
+            >
               …
             </li>
           ) : (
@@ -56,7 +60,7 @@ export function Pagination({
           href={makeHref(page + 1)}
           className={buttonVariants({ variant: "secondary", size: "sm" })}
         >
-          Next
+          下一页
         </Link>
       ) : null}
     </nav>
@@ -64,12 +68,19 @@ export function Pagination({
 }
 
 function pageWindow(page: number, totalPages: number): Array<number | "ellipsis"> {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+  if (totalPages <= 7)
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
   const pages = new Set([1, totalPages, page, page - 1, page + 1]);
-  const ordered = [...pages].filter((value) => value > 0 && value <= totalPages).sort((a, b) => a - b);
+  const ordered = [...pages]
+    .filter((value) => value > 0 && value <= totalPages)
+    .sort((a, b) => a - b);
   const result: Array<number | "ellipsis"> = [];
   for (const value of ordered) {
-    if (result.length > 0 && typeof result[result.length - 1] === "number" && value - Number(result[result.length - 1]) > 1) {
+    if (
+      result.length > 0 &&
+      typeof result[result.length - 1] === "number" &&
+      value - Number(result[result.length - 1]) > 1
+    ) {
       result.push("ellipsis");
     }
     result.push(value);

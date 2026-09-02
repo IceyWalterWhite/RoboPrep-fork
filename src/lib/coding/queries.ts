@@ -35,7 +35,13 @@ import type {
 import { CODING_PAGE_SIZE } from "./constants";
 import { acceptanceRate, deriveProblemStatus } from "./helpers";
 import { parseEvaluatorConfig } from "@/lib/judge/evaluator-config";
-import { mapCodingExample, mapCodingProblemDetail, mapCodingProblemSummary, mapCodingSubmission, type CodingProblemCatalogRow } from "./mappers";
+import {
+  mapCodingExample,
+  mapCodingProblemDetail,
+  mapCodingProblemSummary,
+  mapCodingSubmission,
+  type CodingProblemCatalogRow,
+} from "./mappers";
 import { parseStructuredCase, type StructuredCaseRow } from "./structured";
 
 function warn(context: string, error: { message: string }) {
@@ -47,7 +53,10 @@ function emptyPage(page: number, pageSize: number): PaginatedCodingProblems {
 }
 
 function ilikePattern(value: string): string {
-  const cleaned = value.replace(/[%_,().\\]/g, " ").replace(/\s+/g, " ").trim();
+  const cleaned = value
+    .replace(/[%_,().\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return cleaned ? `%${cleaned}%` : "";
 }
 
@@ -136,14 +145,24 @@ async function problemIdsForCompany(
     warn("problemIdsForCompany/links", linksError);
     return [];
   }
-  return [...new Set((links ?? []).map((row) => row.coding_problem_id).filter((id): id is string => id !== null))];
+  return [
+    ...new Set(
+      (links ?? [])
+        .map((row) => row.coding_problem_id)
+        .filter((id): id is string => id !== null),
+    ),
+  ];
 }
 
 async function problemIdsForTopic(
   supabase: Awaited<ReturnType<typeof createClient>>,
   slug: string,
 ): Promise<string[]> {
-  const { data: topic, error } = await supabase.from("topics").select("id").eq("slug", slug).maybeSingle();
+  const { data: topic, error } = await supabase
+    .from("topics")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
   if (error) warn("resolve topic", error);
   if (!topic) return [];
   const { data, error: linkError } = await supabase
@@ -154,7 +173,9 @@ async function problemIdsForTopic(
   return [...new Set((data ?? []).map((row) => row.problem_id))];
 }
 
-async function getAcceptanceRates(problemIds: string[]): Promise<Map<string, number | null>> {
+async function getAcceptanceRates(
+  problemIds: string[],
+): Promise<Map<string, number | null>> {
   const result = new Map<string, number | null>();
   if (problemIds.length === 0) return result;
   const admin = createAdminClient();
@@ -182,7 +203,9 @@ async function getAcceptanceRates(problemIds: string[]): Promise<Map<string, num
   return result;
 }
 
-async function getUserStatuses(problemIds: string[]): Promise<Map<string, CodingProblemStatus>> {
+async function getUserStatuses(
+  problemIds: string[],
+): Promise<Map<string, CodingProblemStatus>> {
   const result = new Map<string, CodingProblemStatus>();
   if (problemIds.length === 0) return result;
   const user = await getCurrentUser();
@@ -220,15 +243,24 @@ async function mapSummaries(
     getAcceptanceRates(ids),
     getUserStatuses(ids),
   ]);
-  return rows.map((row) => mapCodingProblemSummary(row, topicMap.get(row.id) ?? [], acceptanceRates.get(row.id) ?? null, userStatuses.get(row.id) ?? null));
+  return rows.map((row) =>
+    mapCodingProblemSummary(
+      row,
+      topicMap.get(row.id) ?? [],
+      acceptanceRates.get(row.id) ?? null,
+      userStatuses.get(row.id) ?? null,
+    ),
+  );
 }
 
-export async function getCodingProblems(options: {
-  filters?: CodingFilters;
-  sort?: "recommended" | "difficulty" | "acceptance" | "newest";
-  page?: number;
-  pageSize?: number;
-} = {}): Promise<PaginatedCodingProblems> {
+export async function getCodingProblems(
+  options: {
+    filters?: CodingFilters;
+    sort?: "recommended" | "difficulty" | "acceptance" | "newest";
+    page?: number;
+    pageSize?: number;
+  } = {},
+): Promise<PaginatedCodingProblems> {
   const page = Math.max(1, options.page ?? 1);
   const pageSize = Math.min(50, Math.max(1, options.pageSize ?? CODING_PAGE_SIZE));
   const filters = options.filters ?? {};
@@ -254,23 +286,40 @@ export async function getCodingProblems(options: {
   if (filters.query) {
     const pattern = ilikePattern(filters.query);
     if (!pattern) return emptyPage(page, pageSize);
-    const { data: matchedTopics } = await supabase.from("topics").select("id").ilike("name", pattern);
+    const { data: matchedTopics } = await supabase
+      .from("topics")
+      .select("id")
+      .ilike("name", pattern);
     const topicIds = (matchedTopics ?? []).map((topic) => topic.id);
     const topicProblemIds = topicIds.length
-      ? (await supabase.from("coding_problem_topics").select("problem_id").in("topic_id", topicIds)).data ?? []
+      ? ((
+          await supabase
+            .from("coding_problem_topics")
+            .select("problem_id")
+            .in("topic_id", topicIds)
+        ).data ?? [])
       : [];
-    const orParts = [`title.ilike.${pattern}`, `description.ilike.${pattern}`, `category.ilike.${pattern}`];
-    if (topicProblemIds.length > 0) orParts.push(`id.in.(${topicProblemIds.map((row) => row.problem_id).join(",")})`);
+    const orParts = [
+      `title.ilike.${pattern}`,
+      `description.ilike.${pattern}`,
+      `category.ilike.${pattern}`,
+    ];
+    if (topicProblemIds.length > 0)
+      orParts.push(`id.in.(${topicProblemIds.map((row) => row.problem_id).join(",")})`);
     query = query.or(orParts.join(","));
   }
 
   // Progress is derived from the current viewer's submissions, so that filter
   // also has to happen after the batch status query below rather than in SQL.
-  const needsMemorySort = sort === "difficulty" || sort === "acceptance" || !!filters.status;
+  const needsMemorySort =
+    sort === "difficulty" || sort === "acceptance" || !!filters.status;
   if (!needsMemorySort) {
-    query = sort === "newest"
-      ? query.order("created_at", { ascending: false })
-      : query.order("is_featured", { ascending: false }).order("created_at", { ascending: false });
+    query =
+      sort === "newest"
+        ? query.order("created_at", { ascending: false })
+        : query
+            .order("is_featured", { ascending: false })
+            .order("created_at", { ascending: false });
   }
   const { data, error, count } = needsMemorySort
     ? await query.range(0, Math.max(999, page * pageSize - 1))
@@ -289,13 +338,18 @@ export async function getCodingProblems(options: {
       return rank[b.difficulty] - rank[a.difficulty] || a.title.localeCompare(b.title);
     }
     if (sort === "acceptance") {
-      return (b.acceptanceRate ?? -1) - (a.acceptanceRate ?? -1) || a.title.localeCompare(b.title);
+      return (
+        (b.acceptanceRate ?? -1) - (a.acceptanceRate ?? -1) ||
+        a.title.localeCompare(b.title)
+      );
     }
     return 0;
   });
-  const total = filters.status ? ordered.length : count ?? ordered.length;
+  const total = filters.status ? ordered.length : (count ?? ordered.length);
   return {
-    items: needsMemorySort ? ordered.slice((page - 1) * pageSize, page * pageSize) : ordered,
+    items: needsMemorySort
+      ? ordered.slice((page - 1) * pageSize, page * pageSize)
+      : ordered,
     page,
     pageSize,
     total,
@@ -303,7 +357,10 @@ export async function getCodingProblems(options: {
   };
 }
 
-export async function getVisibleExamples(problemId: string, entrypointName?: string | null): Promise<CodingExample[]> {
+export async function getVisibleExamples(
+  problemId: string,
+  entrypointName?: string | null,
+): Promise<CodingExample[]> {
   if (!isSupabaseConfigured) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -318,7 +375,9 @@ export async function getVisibleExamples(problemId: string, entrypointName?: str
   return (data ?? []).map((row) => mapCodingExample(row, entrypointName ?? null));
 }
 
-export async function getCodingProblemBySlug(slug: string): Promise<CodingProblemDetail | null> {
+export async function getCodingProblemBySlug(
+  slug: string,
+): Promise<CodingProblemDetail | null> {
   if (!isSupabaseConfigured) return null;
   const supabase = await createClient();
   const { data: row, error } = await supabase
@@ -336,20 +395,31 @@ export async function getCodingProblemBySlug(slug: string): Promise<CodingProble
     getVisibleExamples(row.id, row.entrypoint_name),
     getAcceptanceRates([row.id]),
   ]);
-  return mapCodingProblemDetail(row, topics.get(row.id) ?? [], examples, rates.get(row.id) ?? null);
+  return mapCodingProblemDetail(
+    row,
+    topics.get(row.id) ?? [],
+    examples,
+    rates.get(row.id) ?? null,
+  );
 }
 
 export async function getCodingTopics(): Promise<CodingTopicRef[]> {
   if (!isSupabaseConfigured) return [];
   const supabase = await createClient();
-  const { data: links, error } = await supabase.from("coding_problem_topics").select("topic_id");
+  const { data: links, error } = await supabase
+    .from("coding_problem_topics")
+    .select("topic_id");
   if (error) {
     warn("getCodingTopics/links", error);
     return [];
   }
   const topicIds = [...new Set((links ?? []).map((link) => link.topic_id))];
   if (topicIds.length === 0) return [];
-  const { data, error: topicError } = await supabase.from("topics").select("name, slug").in("id", topicIds).order("name");
+  const { data, error: topicError } = await supabase
+    .from("topics")
+    .select("name, slug")
+    .in("id", topicIds)
+    .order("name");
   if (topicError) warn("getCodingTopics/topics", topicError);
   return data ?? [];
 }
@@ -357,13 +427,21 @@ export async function getCodingTopics(): Promise<CodingTopicRef[]> {
 export async function getCodingFilterOptions(): Promise<CodingFilterOptions> {
   if (!isSupabaseConfigured) return { categories: [], topics: [], difficulties: [] };
   const supabase = await createClient();
-  const { data, error } = await supabase.from("coding_problem_catalog").select("category, difficulty");
+  const { data, error } = await supabase
+    .from("coding_problem_catalog")
+    .select("category, difficulty");
   if (error) {
     warn("getCodingFilterOptions/problems", error);
     return { categories: [], topics: [], difficulties: [] };
   }
   return {
-    categories: [...new Set((data ?? []).map((row) => row.category).filter((value): value is string => !!value))].sort(),
+    categories: [
+      ...new Set(
+        (data ?? [])
+          .map((row) => row.category)
+          .filter((value): value is string => !!value),
+      ),
+    ].sort(),
     topics: await getCodingTopics(),
     difficulties: [...new Set((data ?? []).map((row) => row.difficulty))].sort(),
   };
@@ -372,7 +450,10 @@ export async function getCodingFilterOptions(): Promise<CodingFilterOptions> {
 const SUBMISSION_PUBLIC_COLUMNS =
   "id, user_id, problem_id, language, status, score, runtime_ms, memory_kb, evaluation_summary, created_at, completed_at";
 
-export async function getUserSubmissions(problemId?: string, limit = 30): Promise<CodingSubmission[]> {
+export async function getUserSubmissions(
+  problemId?: string,
+  limit = 30,
+): Promise<CodingSubmission[]> {
   if (!isSupabaseConfigured) return [];
   const user = await getCurrentUser();
   if (!user) return [];
@@ -391,18 +472,27 @@ export async function getUserSubmissions(problemId?: string, limit = 30): Promis
   }
   const problemIds = [...new Set((data ?? []).map((row) => row.problem_id))];
   const { data: problems } = problemIds.length
-    ? await supabase.from("coding_problem_catalog").select("id, slug, title").in("id", problemIds)
+    ? await supabase
+        .from("coding_problem_catalog")
+        .select("id, slug, title")
+        .in("id", problemIds)
     : { data: [] };
   const problemById = new Map((problems ?? []).map((problem) => [problem.id, problem]));
-  return (data ?? []).map((row) => mapCodingSubmission(row, problemById.get(row.problem_id)));
+  return (data ?? []).map((row) =>
+    mapCodingSubmission(row, problemById.get(row.problem_id)),
+  );
 }
 
-export async function getUserProblemStatus(problemId: string): Promise<CodingProblemStatus | null> {
+export async function getUserProblemStatus(
+  problemId: string,
+): Promise<CodingProblemStatus | null> {
   const submissions = await getUserSubmissions(problemId, 100);
   return submissions.length > 0 ? deriveProblemStatus(submissions) : null;
 }
 
-export async function getSubmissionById(id: string): Promise<CodingSubmissionResult | null> {
+export async function getSubmissionById(
+  id: string,
+): Promise<CodingSubmissionResult | null> {
   if (!isSupabaseConfigured) return null;
   const user = await getCurrentUser();
   if (!user) return null;
@@ -418,25 +508,37 @@ export async function getSubmissionById(id: string): Promise<CodingSubmissionRes
     return null;
   }
   const [{ data: problem }, { data: cases, error: casesError }] = await Promise.all([
-    supabase.from("coding_problem_catalog").select("id, slug, title").eq("id", row.problem_id).maybeSingle(),
+    supabase
+      .from("coding_problem_catalog")
+      .select("id, slug, title")
+      .eq("id", row.problem_id)
+      .maybeSingle(),
     supabase
       .from("coding_submission_cases")
-      .select("id, submission_id, test_case_id, status, runtime_ms, memory_kb, stdout, stderr, created_at")
+      .select(
+        "id, submission_id, test_case_id, status, runtime_ms, memory_kb, stdout, stderr, created_at",
+      )
       .eq("submission_id", id)
       .order("created_at"),
   ]);
   if (casesError) warn("getSubmissionById/cases", casesError);
-  const visibleIds = new Set((await getVisibleExamples(row.problem_id)).map((example) => example.id));
+  const visibleIds = new Set(
+    (await getVisibleExamples(row.problem_id)).map((example) => example.id),
+  );
   const mappedCases: CodingSubmissionCaseResult[] = (cases ?? []).map((item) => ({
     id: item.id,
-    name: item.test_case_id && visibleIds.has(item.test_case_id) ? "Visible test" : "Hidden test",
+    name:
+      item.test_case_id && visibleIds.has(item.test_case_id) ? "可见测试" : "隐藏测试",
     status: item.status ?? "internal_error",
     runtimeMs: item.runtime_ms,
     memoryKb: item.memory_kb,
     stdout: item.stdout,
     stderr: item.stderr,
   }));
-  return { submission: mapCodingSubmission(row, problem ?? undefined), cases: mappedCases };
+  return {
+    submission: mapCodingSubmission(row, problem ?? undefined),
+    cases: mappedCases,
+  };
 }
 
 export interface CodingJudgeDefinition {
@@ -447,16 +549,31 @@ export interface CodingJudgeDefinition {
   memoryLimitMb: number;
   comparisonMode: "exact" | "trimmed" | "numeric";
   tolerance: number;
-  tests: Array<Pick<CodingTestCase, "id" | "name" | "input_data" | "expected_output" | "is_hidden" | "weight" | "order_index">>;
+  tests: Array<
+    Pick<
+      CodingTestCase,
+      | "id"
+      | "name"
+      | "input_data"
+      | "expected_output"
+      | "is_hidden"
+      | "weight"
+      | "order_index"
+    >
+  >;
 }
 
-export async function getCodingJudgeDefinition(slug: string): Promise<CodingJudgeDefinition | null> {
+export async function getCodingJudgeDefinition(
+  slug: string,
+): Promise<CodingJudgeDefinition | null> {
   if (!isSupabaseConfigured) return null;
   const admin = createAdminClient();
   if (!admin) return null;
   const { data: problem, error } = await admin
     .from("coding_problems")
-    .select("id, slug, language, time_limit_ms, memory_limit_mb, comparison_mode, tolerance, is_published")
+    .select(
+      "id, slug, language, time_limit_ms, memory_limit_mb, comparison_mode, tolerance, is_published",
+    )
     .eq("slug", slug)
     .eq("is_published", true)
     .maybeSingle();
@@ -466,7 +583,9 @@ export async function getCodingJudgeDefinition(slug: string): Promise<CodingJudg
   }
   const { data: tests, error: testsError } = await admin
     .from("coding_test_cases")
-    .select("id, problem_id, name, input_data, expected_output, is_hidden, weight, order_index")
+    .select(
+      "id, problem_id, name, input_data, expected_output, is_hidden, weight, order_index",
+    )
     .eq("problem_id", problem.id)
     .order("order_index");
   if (testsError) {
@@ -485,7 +604,9 @@ export async function getCodingJudgeDefinition(slug: string): Promise<CodingJudg
   };
 }
 
-export async function getCodingAcceptanceRate(problemId: string): Promise<number | null> {
+export async function getCodingAcceptanceRate(
+  problemId: string,
+): Promise<number | null> {
   return (await getAcceptanceRates([problemId])).get(problemId) ?? null;
 }
 
@@ -515,7 +636,9 @@ export interface MLJudgeDefinition {
  * object is therefore only ever used inside API routes, and every field that
  * crosses back to the browser goes through `redactMLEvaluation`.
  */
-export async function getMLJudgeDefinition(slug: string): Promise<MLJudgeDefinition | null> {
+export async function getMLJudgeDefinition(
+  slug: string,
+): Promise<MLJudgeDefinition | null> {
   if (!isSupabaseConfigured) return null;
   const admin = createAdminClient();
   if (!admin) return null;
@@ -531,12 +654,15 @@ export async function getMLJudgeDefinition(slug: string): Promise<MLJudgeDefinit
     if (error) warn("getMLJudgeDefinition/problem", error);
     return null;
   }
-  if (problem.evaluation_mode !== "function" && problem.evaluation_mode !== "class") return null;
+  if (problem.evaluation_mode !== "function" && problem.evaluation_mode !== "class")
+    return null;
   if (!problem.entrypoint_name || !problem.entrypoint_type) return null;
 
   const { data: tests, error: testsError } = await admin
     .from("coding_test_cases")
-    .select("id, name, test_type, test_group, input_json, expected_json, metadata, weight, is_hidden, order_index")
+    .select(
+      "id, name, test_type, test_group, input_json, expected_json, metadata, weight, is_hidden, order_index",
+    )
     .eq("problem_id", problem.id)
     .order("order_index");
   if (testsError) {
@@ -547,9 +673,14 @@ export async function getMLJudgeDefinition(slug: string): Promise<MLJudgeDefinit
   const cases: StructuredTestCase[] = [];
   const visibleCaseIds = new Set<string>();
   for (const row of tests ?? []) {
-    const parsed = parseStructuredCase(row as StructuredCaseRow, problem.entrypoint_name);
+    const parsed = parseStructuredCase(
+      row as StructuredCaseRow,
+      problem.entrypoint_name,
+    );
     if (!parsed) {
-      warn("getMLJudgeDefinition/case", { message: `skipped malformed structured case ${row.id} on ${problem.slug}` });
+      warn("getMLJudgeDefinition/case", {
+        message: `skipped malformed structured case ${row.id} on ${problem.slug}`,
+      });
       continue;
     }
     cases.push(parsed.testCase);
@@ -572,7 +703,9 @@ export async function getMLJudgeDefinition(slug: string): Promise<MLJudgeDefinit
 }
 
 /** Resolve the evaluation mode without loading hidden payloads. */
-export async function getCodingEvaluationMode(slug: string): Promise<CodingEvaluationMode | null> {
+export async function getCodingEvaluationMode(
+  slug: string,
+): Promise<CodingEvaluationMode | null> {
   if (!isSupabaseConfigured) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -600,7 +733,9 @@ function emptyCounts(total: number): CodingProgressCounts {
  * from the current viewer's submissions (never a stale cache), so it is
  * correct for anonymous users (all unsolved) and authenticated users alike.
  */
-async function statusMapForProblems(problemIds: string[]): Promise<Map<string, CodingProblemStatus>> {
+async function statusMapForProblems(
+  problemIds: string[],
+): Promise<Map<string, CodingProblemStatus>> {
   const result = new Map<string, CodingProblemStatus>();
   if (problemIds.length === 0) return result;
   const user = await getCurrentUser();
@@ -629,8 +764,15 @@ async function statusMapForProblems(problemIds: string[]): Promise<Map<string, C
 }
 
 /** Aggregate a status map into solved / attempted / unsolved / total counts. */
-function countsFromStatuses(statuses: Array<CodingProblemStatus | undefined>): CodingProgressCounts {
-  const counts: CodingProgressCounts = { solved: 0, attempted: 0, unsolved: 0, total: statuses.length };
+function countsFromStatuses(
+  statuses: Array<CodingProblemStatus | undefined>,
+): CodingProgressCounts {
+  const counts: CodingProgressCounts = {
+    solved: 0,
+    attempted: 0,
+    unsolved: 0,
+    total: statuses.length,
+  };
   for (const status of statuses) {
     if (status === "solved") counts.solved += 1;
     else if (status === "attempted") counts.attempted += 1;
@@ -666,9 +808,15 @@ export async function getCodingCollections(): Promise<CodingCollectionSummary[]>
   const problemCountByCollection = new Map<string, number>();
   const solvedByCollection = new Map<string, number>();
   for (const link of links ?? []) {
-    problemCountByCollection.set(link.collection_id, (problemCountByCollection.get(link.collection_id) ?? 0) + 1);
+    problemCountByCollection.set(
+      link.collection_id,
+      (problemCountByCollection.get(link.collection_id) ?? 0) + 1,
+    );
     if (statuses.get(link.problem_id) === "solved") {
-      solvedByCollection.set(link.collection_id, (solvedByCollection.get(link.collection_id) ?? 0) + 1);
+      solvedByCollection.set(
+        link.collection_id,
+        (solvedByCollection.get(link.collection_id) ?? 0) + 1,
+      );
     }
   }
 
@@ -683,7 +831,9 @@ export async function getCodingCollections(): Promise<CodingCollectionSummary[]>
   }));
 }
 
-export async function getCodingCollectionBySlug(slug: string): Promise<CodingCollectionDetail | null> {
+export async function getCodingCollectionBySlug(
+  slug: string,
+): Promise<CodingCollectionDetail | null> {
   if (!isSupabaseConfigured) return null;
   const supabase = await createClient();
   const { data: collection, error } = await supabase
@@ -723,7 +873,9 @@ export async function getCodingCollectionBySlug(slug: string): Promise<CodingCol
     .in("id", problemIds);
   if (problemsError) warn("getCodingCollectionBySlug/problems", problemsError);
 
-  const orderByProblem = new Map((links ?? []).map((link) => [link.problem_id, link.order_index]));
+  const orderByProblem = new Map(
+    (links ?? []).map((link) => [link.problem_id, link.order_index]),
+  );
   const orderedRows = [...(rows ?? [])].sort(
     (a, b) => (orderByProblem.get(a.id) ?? 0) - (orderByProblem.get(b.id) ?? 0),
   );
@@ -777,7 +929,9 @@ export async function getCollectionProgress(): Promise<CollectionProgress[]> {
 export async function getTopicProgress(): Promise<TopicProgress[]> {
   if (!isSupabaseConfigured) return [];
   const supabase = await createClient();
-  const { data: links, error } = await supabase.from("coding_problem_topics").select("problem_id, topic_id");
+  const { data: links, error } = await supabase
+    .from("coding_problem_topics")
+    .select("problem_id, topic_id");
   if (error) {
     warn("getTopicProgress/links", error);
     return [];
@@ -818,19 +972,29 @@ export async function getCodingOverview(): Promise<CodingOverview> {
   if (!isSupabaseConfigured) {
     return {
       counts: emptyCounts(0),
-      byDifficulty: { easy: emptyCounts(0), medium: emptyCounts(0), hard: emptyCounts(0) },
+      byDifficulty: {
+        easy: emptyCounts(0),
+        medium: emptyCounts(0),
+        hard: emptyCounts(0),
+      },
       topics: [],
       collections: [],
       recent: [],
     };
   }
   const supabase = await createClient();
-  const { data, error } = await supabase.from("coding_problem_catalog").select("id, difficulty");
+  const { data, error } = await supabase
+    .from("coding_problem_catalog")
+    .select("id, difficulty");
   if (error) {
     warn("getCodingOverview/problems", error);
     return {
       counts: emptyCounts(0),
-      byDifficulty: { easy: emptyCounts(0), medium: emptyCounts(0), hard: emptyCounts(0) },
+      byDifficulty: {
+        easy: emptyCounts(0),
+        medium: emptyCounts(0),
+        hard: emptyCounts(0),
+      },
       topics: [],
       collections: [],
       recent: [],
@@ -841,9 +1005,21 @@ export async function getCodingOverview(): Promise<CodingOverview> {
   const statusForId = (id: string) => statuses.get(id);
 
   const byDifficulty: CodingOverview["byDifficulty"] = {
-    easy: countsFromStatuses((data ?? []).filter((row) => row.difficulty === "easy").map((row) => statusForId(row.id))),
-    medium: countsFromStatuses((data ?? []).filter((row) => row.difficulty === "medium").map((row) => statusForId(row.id))),
-    hard: countsFromStatuses((data ?? []).filter((row) => row.difficulty === "hard").map((row) => statusForId(row.id))),
+    easy: countsFromStatuses(
+      (data ?? [])
+        .filter((row) => row.difficulty === "easy")
+        .map((row) => statusForId(row.id)),
+    ),
+    medium: countsFromStatuses(
+      (data ?? [])
+        .filter((row) => row.difficulty === "medium")
+        .map((row) => statusForId(row.id)),
+    ),
+    hard: countsFromStatuses(
+      (data ?? [])
+        .filter((row) => row.difficulty === "hard")
+        .map((row) => statusForId(row.id)),
+    ),
   };
 
   const [topics, collections, recent] = await Promise.all([

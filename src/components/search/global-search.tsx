@@ -50,7 +50,9 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
     }
     debounceRef.current = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(query.trim())}`,
+        );
         if (!response.ok) throw new Error("search failed");
         const data = (await response.json()) as GroupedResults;
         setResults(data);
@@ -67,7 +69,10 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
   }, [query]);
 
   // Derived: a request is in flight when the typed query has no results yet.
-  const busy = query.trim().length >= 2 && status !== "error" && (results === null || results.query !== query.trim());
+  const busy =
+    query.trim().length >= 2 &&
+    status !== "error" &&
+    (results === null || results.query !== query.trim());
 
   const flatHits: SearchHit[] = React.useMemo(
     () => results?.groups.flatMap((group) => group.hits) ?? [],
@@ -109,8 +114,8 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Search questions, interviews, coding, companies…"
-          aria-label="Global search"
+          placeholder="搜索问题、面试、Coding 和公司…"
+          aria-label="全局搜索"
           className="pl-9"
           role="combobox"
           aria-expanded={flatHits.length > 0}
@@ -120,31 +125,53 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
 
       {busy && (
         <p className="text-ink-tertiary flex items-center gap-2 text-sm" role="status">
-          <Loader2 className="size-4 animate-spin" aria-hidden /> Searching…
+          <Loader2 className="size-4 animate-spin" aria-hidden /> 搜索中…
         </p>
       )}
 
       {status === "error" && (
         <p className="text-ink-secondary text-sm" role="status">
-          Search is temporarily unavailable. Please try again in a moment.
+          搜索暂时不可用，请稍后再试。
         </p>
       )}
 
-      {status === "idle" && query.trim().length >= 2 && results && results.total === 0 && (
-        <p className="text-ink-secondary text-sm" role="status">
-          No results for “{results.query}”. Try a shorter term, or browse{" "}
-          <Link href="/knowledge" className="text-accent hover:underline">Knowledge</Link>,{" "}
-          <Link href="/interviews" className="text-accent hover:underline">Interviews</Link>,{" "}
-          <Link href="/coding" className="text-accent hover:underline">Coding</Link> or{" "}
-          <Link href="/companies" className="text-accent hover:underline">Companies</Link>.
-        </p>
-      )}
+      {status === "idle" &&
+        query.trim().length >= 2 &&
+        results &&
+        results.total === 0 && (
+          <p className="text-ink-secondary text-sm" role="status">
+            没有找到“{results.query}”的结果。可以尝试更短的关键词，或浏览{" "}
+            <Link href="/knowledge" className="text-accent hover:underline">
+              知识库
+            </Link>
+            、{" "}
+            <Link href="/interviews" className="text-accent hover:underline">
+              面试
+            </Link>
+            、{" "}
+            <Link href="/coding" className="text-accent hover:underline">
+              Coding
+            </Link>{" "}
+            或{" "}
+            <Link href="/companies" className="text-accent hover:underline">
+              公司
+            </Link>
+            。
+          </p>
+        )}
 
       {results && results.groups.length > 0 && (
-        <div id="global-search-results" role="listbox" aria-label="Search results" className="flex flex-col gap-4">
+        <div
+          id="global-search-results"
+          role="listbox"
+          aria-label="搜索结果"
+          className="flex flex-col gap-4"
+        >
           {results.groups.map((group) => (
             <div key={group.group}>
-              <h3 className="text-ink-tertiary text-xs font-semibold tracking-wide uppercase">{group.label}</h3>
+              <h3 className="text-ink-tertiary text-xs font-semibold tracking-wide uppercase">
+                {group.label}
+              </h3>
               <ul className="mt-1 flex flex-col">
                 {group.hits.map((hit) => {
                   const active = globalIndexByHref.get(hit.href) === activeIndex;
@@ -160,9 +187,13 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
                           active ? "bg-surface-sunken" : "hover:bg-surface-sunken",
                         )}
                       >
-                        <span className="text-ink block truncate text-sm font-medium">{hit.title}</span>
+                        <span className="text-ink block truncate text-sm font-medium">
+                          {hit.title}
+                        </span>
                         {hit.subtitle && (
-                          <span className="text-ink-tertiary block truncate text-xs">{hit.subtitle}</span>
+                          <span className="text-ink-tertiary block truncate text-xs">
+                            {hit.subtitle}
+                          </span>
                         )}
                       </button>
                     </li>
@@ -176,7 +207,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
 
       {query.trim().length < 2 && (
         <p className="text-ink-tertiary text-sm">
-          Type at least two characters. Results cover Knowledge, Interviews, Coding, Companies and Topics.
+          至少输入两个字符。结果覆盖知识库、面试、Coding、公司和主题。
         </p>
       )}
     </div>

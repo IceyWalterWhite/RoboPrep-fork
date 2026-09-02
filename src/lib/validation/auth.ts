@@ -5,29 +5,25 @@ import { z } from "zod";
  * Kept in one place so validation messages stay consistent.
  */
 
-const email = z
-  .string()
-  .trim()
-  .min(1, "Email is required")
-  .email("Enter a valid email address");
+const email = z.string().trim().min(1, "请输入邮箱").email("请输入有效的邮箱地址");
 
 export const signInSchema = z.object({
   email,
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, "请输入密码"),
 });
 
 export const signUpSchema = z
   .object({
     email,
-    displayName: z.string().trim().max(50, "Keep the name under 50 characters"),
+    displayName: z.string().trim().max(50, "显示名称不能超过 50 个字符"),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(72, "Password must be at most 72 characters"),
-    confirmPassword: z.string().min(1, "Confirm your password"),
+      .min(8, "密码至少需要 8 个字符")
+      .max(72, "密码不能超过 72 个字符"),
+    confirmPassword: z.string().min(1, "请确认密码"),
   })
   .refine((values) => values.password === values.confirmPassword, {
-    message: "Passwords do not match",
+    message: "两次输入的密码不一致",
     path: ["confirmPassword"],
   });
 
@@ -55,25 +51,25 @@ export function readableAuthError(message: string): string {
   const normalized = message.toLowerCase();
 
   if (normalized.includes("invalid login credentials")) {
-    return "Incorrect email or password.";
+    return "邮箱或密码错误。";
   }
   if (normalized.includes("email not confirmed")) {
-    return "Confirm your email address before signing in.";
+    return "请先确认邮箱地址，再登录。";
   }
   if (normalized.includes("user already registered")) {
-    return "An account with this email already exists.";
+    return "该邮箱已经注册过账户。";
   }
   if (normalized.includes("password should be")) {
-    return "Password must be at least 8 characters.";
+    return "密码至少需要 8 个字符。";
   }
   if (
     normalized.includes("over_email_send_rate_limit") ||
     normalized.includes("rate limit")
   ) {
-    return "Too many attempts. Wait a moment and try again.";
+    return "操作次数过多，请稍后再试。";
   }
   if (normalized.includes("failed to fetch") || normalized.includes("networkerror")) {
-    return "Could not reach Supabase. Check your environment configuration.";
+    return "无法连接 Supabase，请检查环境配置。";
   }
 
   return message;

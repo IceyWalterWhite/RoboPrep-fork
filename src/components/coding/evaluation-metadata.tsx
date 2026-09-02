@@ -17,24 +17,34 @@ import type { PublicEvaluationMetadata } from "@/types/coding";
  * Program-mode problems render nothing, keeping the classic stdin/stdout
  * page uncluttered.
  */
-export function EvaluationMetadata({ evaluation }: { evaluation: PublicEvaluationMetadata }) {
+export function EvaluationMetadata({
+  evaluation,
+}: {
+  evaluation: PublicEvaluationMetadata;
+}) {
   if (evaluation.evaluationMode === "program") return null;
 
   const rows: Array<{ label: string; value: string }> = [
-    { label: "Evaluation", value: CODING_EVALUATION_MODE_LABELS[evaluation.evaluationMode] },
+    {
+      label: "评测方式",
+      value: CODING_EVALUATION_MODE_LABELS[evaluation.evaluationMode],
+    },
   ];
   if (evaluation.framework) {
-    rows.push({ label: "Framework", value: CODING_FRAMEWORK_LABELS[evaluation.framework] });
+    rows.push({ label: "框架", value: CODING_FRAMEWORK_LABELS[evaluation.framework] });
   }
   if (evaluation.entrypointName) {
-    rows.push({ label: "Entrypoint", value: evaluation.entrypointName });
+    rows.push({ label: "入口", value: evaluation.entrypointName });
   }
-  rows.push({ label: "Runtime", value: CODING_RESOURCE_PROFILE_LABELS[evaluation.resourceProfile] });
+  rows.push({
+    label: "运行环境",
+    value: CODING_RESOURCE_PROFILE_LABELS[evaluation.resourceProfile],
+  });
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">How this is evaluated</CardTitle>
+        <CardTitle className="text-base">评测方式</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
@@ -46,7 +56,7 @@ export function EvaluationMetadata({ evaluation }: { evaluation: PublicEvaluatio
           ))}
         </dl>
         <div className="border-line-subtle flex flex-wrap items-center gap-2 border-t pt-4">
-          <span className="text-ink-tertiary text-xs">Checks</span>
+          <span className="text-ink-tertiary text-xs">检查项</span>
           {evaluation.checks.map((check) => (
             <span
               key={check}

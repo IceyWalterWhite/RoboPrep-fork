@@ -79,7 +79,7 @@ export function Modal({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close dialog"
+          aria-label="关闭对话框"
           className="text-ink-tertiary hover:bg-surface-sunken hover:text-ink rounded-sm p-1 transition-colors"
         >
           <X className="size-4" aria-hidden />

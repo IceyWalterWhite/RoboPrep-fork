@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
  * pretends to run a query.
  */
 export function SearchPlaceholder({
-  placeholder = "Search questions, topics, companies…",
+  placeholder = "搜索问题、主题和公司…",
   className,
 }: {
   placeholder?: string;
@@ -23,7 +23,7 @@ export function SearchPlaceholder({
       />
       <Input
         readOnly
-        aria-label="Search (coming soon)"
+        aria-label="搜索（即将上线）"
         placeholder={placeholder}
         className="pl-9"
       />

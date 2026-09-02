@@ -53,31 +53,29 @@ export function findDuplicateInterviews(
       const reasons: string[] = [];
       let score = 0;
 
-      if (
-        input.sourceUrl &&
-        row.sourceUrl &&
-        input.sourceUrl === row.sourceUrl
-      ) {
+      if (input.sourceUrl && row.sourceUrl && input.sourceUrl === row.sourceUrl) {
         score += WEIGHTS.sameSourceUrl;
-        reasons.push("identical source URL");
+        reasons.push("来源 URL 相同");
       }
 
-      const sameCompany = !input.companySlug || !row.companySlug || input.companySlug === row.companySlug;
+      const sameCompany =
+        !input.companySlug || !row.companySlug || input.companySlug === row.companySlug;
       const samePosition =
         !!input.positionTitle &&
         !!row.positionTitle &&
-        normalizeQuestionText(input.positionTitle) === normalizeQuestionText(row.positionTitle);
+        normalizeQuestionText(input.positionTitle) ===
+          normalizeQuestionText(row.positionTitle);
       const sameYear = !!input.year && !!row.year && input.year === row.year;
       if (sameCompany && samePosition && sameYear) {
         score += WEIGHTS.sameCompanyPositionYear;
-        reasons.push("same company, position, and year");
+        reasons.push("公司、岗位和年份相同");
       }
 
       if (row.rawText) {
         const textSim = bigramSimilarity(input.rawText, row.rawText);
         if (textSim > 0.7) {
           score += WEIGHTS.rawTextSimilarity * textSim;
-          reasons.push(`raw text ${Math.round(textSim * 100)}% similar`);
+          reasons.push(`原文有 ${Math.round(textSim * 100)}% 相似`);
         }
       }
 
@@ -85,11 +83,12 @@ export function findDuplicateInterviews(
         const normalizedInput = new Set(input.questionTexts.map(normalizeQuestionText));
         const normalizedRow = new Set(row.questionTexts.map(normalizeQuestionText));
         let overlap = 0;
-        for (const question of normalizedInput) if (normalizedRow.has(question)) overlap += 1;
+        for (const question of normalizedInput)
+          if (normalizedRow.has(question)) overlap += 1;
         const ratio = overlap / Math.min(normalizedInput.size, normalizedRow.size);
         if (ratio > 0.5) {
           score += WEIGHTS.questionOverlap * ratio;
-          reasons.push(`${overlap} shared question(s)`);
+          reasons.push(`有 ${overlap} 个问题相同`);
         }
       }
 

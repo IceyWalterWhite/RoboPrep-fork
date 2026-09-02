@@ -2617,4 +2617,144 @@ insert into public.coding_test_cases (
     $data${}$data$
   );
 
+-- ---------------------------------------------------------------------------
+-- Chinese display copy for the supplemental Week 5 catalog.
+-- Keep slugs, identifiers, code, and technical terms stable for integrations.
+-- ---------------------------------------------------------------------------
+update public.coding_problems as p
+set
+  title = v.title,
+  description = v.description,
+  constraints = v.constraints,
+  starter_code = regexp_replace(
+    p.starter_code,
+    E'(?m)# TODO:.*$',
+    $zh$# TODO：请完成该题的实现$zh$,
+    'g'
+  )
+from (
+  values
+    ('implement-rmsnorm', $zh$实现 RMSNorm$zh$, $zh$为一维浮点张量实现 RMS（均方根）归一化。给定向量 x 和 epsilon，先计算向量上的 mean(x^2)，再令 scale = sqrt(mean(x^2) + eps)，最后返回 x / scale。该运算必须可微，因此请使用张量算子（torch.mean / torch.sqrt）完成，不要使用原地 Python 循环。$zh$, $zh$x 是长度为 2 到 16 的一维 float32 张量；eps 是正浮点数。$zh$),
+    ('build-causal-attention-mask-v2', $zh$构建 Causal Attention Mask$zh$, $zh$构建长度为 n 的 causal（因果）Attention Mask。返回 n × n 矩阵：当位置 j 对位置 i 可见（j ≤ i）时，元素 (i, j) 为 1，否则为 0。这样可以阻止 token 关注未来 token。$zh$, $zh$n 是 1 到 32 的整数。$zh$),
+    ('append-kv-cache', $zh$追加 KV Cache$zh$, $zh$将新的 key 和 value 向量追加到已有 KV Cache。Cache 由两个 token 向量列表组成：k_cache（key 向量列表）和 v_cache（value 向量列表）。给定一个新的 key 向量和 value 向量，返回追加新向量后的（k_cache, v_cache）元组。$zh$, $zh$每个 key/value 向量都是长度相同的浮点数列表。$zh$),
+    ('apply-rope-rotation', $zh$应用 RoPE Rotation$zh$, $zh$对长度为 2n 的偶数维一维张量应用 rotary position embedding（RoPE）旋转。将向量拆分为两半 x_first = x[:n] 和 x_second = x[n:]，对每个位置 i 计算：out[i] = x_first[i] * cos[i] - x_second[i] * sin[i]，out[i+n] = x_first[i] * sin[i] + x_second[i] * cos[i]。请使用张量算子（torch.stack / 切片）实现，以保证旋转过程可微。$zh$, $zh$x 的长度为 2 到 16 的偶数；cos 和 sin 是长度为 n 的一维张量。$zh$),
+    ('top-k-token-selection', $zh$选择 Top-k Token$zh$, $zh$给定 logits 列表和整数 k，返回数值最大的 k 个 logits 对应的索引，并按升序排列。这是 Top-k sampling 的词表过滤步骤：只保留概率最高的 k 个 token。若数值相同，优先选择索引较小的项。结果必须是按升序排列的索引列表。$zh$, $zh$k 的范围是 1 到 len(logits)；logits 可以包含任意有限浮点数。$zh$),
+    ('multi-head-attention', $zh$Multi-Head Attention$zh$, $zh$给定已经完成投影的 query、key、value 张量，实现单步 Multi-Head Attention，三者形状均为（heads, seq, head_dim）。对每个 head h 计算 scores = (q[h] @ k[h].T) / sqrt(head_dim)，沿 key 维度应用 softmax，再计算 value 的加权和。返回拼接后的（heads, seq, head_dim）张量。所有运算必须使用张量算子，以保证结果可微。$zh$, $zh$所有 head 的 head_dim 相同；seq ≥ 1。$zh$),
+    ('cross-attention', $zh$Cross Attention$zh$, $zh$实现 Cross Attention，让一个 query 在独立的 key/value memory 上进行注意力计算。给定 query 向量 q（dim,）以及 memory 的 key/value 矩阵（m, dim），计算 scores = q @ K.T / sqrt(dim)，沿 m 个 memory 槽位应用 softmax，最后返回 V 的加权和（长度为 dim 的向量）。这对应 decoder token 关注 encoder 输出的场景。$zh$, $zh$q 的长度为 dim；K 和 V 是（m, dim）矩阵。$zh$),
+    ('discounted-returns', $zh$计算 Discounted Returns$zh$, $zh$给定奖励列表和折扣因子 gamma，计算每个时间步的折扣回报 G_t = reward_t + gamma * G_{t+1}，最后一步的 G 等于该步奖励。返回回报列表，并将每个值四舍五入到小数点后 6 位。$zh$, $zh$gamma 的范围是 [0, 1]；rewards 是非空浮点数列表。$zh$),
+    ('generalized-advantage-estimation', $zh$Generalized Advantage Estimation$zh$, $zh$计算一条轨迹的 Generalized Advantage Estimate（GAE）。给定奖励 r[0..T-1]、价值估计 v[0..T]（多出的一个是终止状态价值）、折扣 gamma 和 Trace 衰减系数 lambda，先计算 delta_t = r_t + gamma * v[t+1] - v[t]，再从后向前累积 A_t = delta_t + (gamma * lambda) * A_{t+1}。返回 t = 0..T-1 的 advantage 列表，并四舍五入到小数点后 6 位。$zh$, $zh$len(v) = len(r) + 1；gamma 和 lambda 的范围都是 [0, 1]。$zh$),
+    ('ppo-probability-ratio', $zh$PPO Probability Ratio$zh$, $zh$计算 PPO 使用的重要性采样比率：ratio = new_prob / old_prob。它用于比较新旧策略对同一动作的概率。返回四舍五入到小数点后 6 位的 ratio。两个概率都必须严格为正。$zh$, $zh$new_prob 和 old_prob 是 (0, 1] 范围内的浮点数。$zh$),
+    ('ppo-clipped-objective', $zh$PPO Clipped Objective$zh$, $zh$实现 PPO 的 clipped surrogate objective（负值，用于梯度下降）。给定 ratio 张量（batch,）、advantages 张量（batch,）和 clip epsilon，先计算每个样本的 surrogate = min(ratio * adv, clip(ratio, 1-eps, 1+eps) * adv)，再返回负均值，使最小化输出能够改善策略。必须使用张量运算并保持可微。$zh$, $zh$ratio 和 adv 是长度为 1 到 8 且形状相同的一维 float32 张量。$zh$),
+    ('grpo-group-advantage', $zh$GRPO Group Advantage$zh$, $zh$为 GRPO 将一组 reward score 归一化为 advantage。给定一组 scores，减去组均值，再除以总体标准差（均方偏差的平方根），并将每个 advantage 四舍五入到小数点后 6 位。如果标准差为零，则返回全零列表。$zh$, $zh$scores 是非空浮点数列表。$zh$),
+    ('approximate-kl-penalty', $zh$Approximate KL Penalty$zh$, $zh$使用新策略与参考策略的 log-probability 列表估计 KL divergence。采用公式 kl = mean(exp(logq - logp) * ((logq - logp) - 1) + 1)。这是 RLHF/GRPO 中常用的、有偏但低方差的策略漂移惩罚估计量。返回标量，并四舍五入到小数点后 6 位。$zh$, $zh$logp 和 logq 是长度相同且包含有限浮点数的列表。$zh$),
+    ('euler-to-quaternion', $zh$Euler Angles 转 Quaternion$zh$, $zh$将 roll-pitch-yaw（ZYX intrinsic）欧拉角三元组转换为单位四元数（w, x, y, z）。使用标准半角公式，其中 c*/s* 分别表示半角的 cos/sin：w = cr*cp*cy + sr*sp*sy，x = sr*cp*cy - cr*sp*sy，y = cr*sp*cy + sr*cp*sy，z = cr*cp*sy - sr*sp*cy。输入为 3 维张量，返回 4 维张量。$zh$, $zh$euler 是形状为（3,）且单位为弧度的 float32 张量。$zh$),
+    ('quaternion-multiply', $zh$Quaternion Multiplication$zh$, $zh$将两个四元数相乘，每个四元数都表示为 [w, x, y, z]。乘积（Hamilton product）表示两个旋转的组合。按给定公式计算 w、x、y、z，并返回 [w, x, y, z]。$zh$, $zh$每个输入都是长度为 4 的浮点数列表。$zh$),
+    ('se3-point-transform', $zh$SE(3) Point Transform$zh$, $zh$使用 SE(3) 位姿（旋转矩阵 R 和平移向量 t）变换一个三维点。计算 p_transformed = R @ p + t，并返回变换后的点。线性代数请使用 numpy。$zh$, $zh$R 是 3 × 3 旋转矩阵；t 和 p 是长度为 3 的向量。$zh$),
+    ('compose-se3', $zh$组合 SE(3) Poses$zh$, $zh$组合两个 SE(3) 位姿：先应用位姿 A =（R1, t1），再应用位姿 B =（R2, t2），组合结果 C = A * B，其中 R = R1 @ R2，t = t1 + R1 @ t2。返回（R, t）元组，并使用 numpy 实现。$zh$, $zh$R1 和 R2 是 3 × 3 旋转矩阵；t1 和 t2 是长度为 3 的向量。$zh$),
+    ('linear-trajectory-interpolation', $zh$线性 Trajectory Interpolation$zh$, $zh$在两个点 a 和 b 之间进行线性插值，生成包含两个端点在内的 n 个等间距点。对 i = 0..n-1，point_i = a + (i / (n-1)) * (b - a)。返回 n 个点的列表；当 n = 1 时只返回 [a]。$zh$, $zh$a 和 b 是长度相同的浮点数列表；n ≥ 1。$zh$),
+    ('linear-beta-schedule', $zh$线性 Beta Schedule$zh$, $zh$为 DDPM diffusion process 构建线性噪声 schedule。给定总步数 T、起始 beta 和结束 beta，返回 T 个 beta_t = beta_start + (t / T) * (beta_end - beta_start)，其中 t = 1..T，结果四舍五入到小数点后 6 位。$zh$, $zh$T 是 2 到 64 的整数；beta_start 和 beta_end 都在 (0, 1) 内。$zh$),
+    ('ddpm-forward-diffusion', $zh$DDPM Forward Diffusion$zh$, $zh$在指定时间步执行 DDPM forward（加噪）过程。给定干净样本 x0、时间步 t 的累计 alpha_bar 以及噪声张量 eps，计算 x_t = sqrt(alpha_bar_t) * x0 + sqrt(1 - alpha_bar_t) * eps，并返回加噪后的张量。该运算必须对 x0 可微。$zh$, $zh$x0 和 eps 是长度相同的 float32 张量（标量 batch）；alpha_bar_t 是 (0, 1) 内的浮点数。$zh$),
+    ('predict-x0', $zh$预测干净样本 x0$zh$, $zh$给定加噪样本 x_t、时间步的累计 alpha_bar 和预测噪声 eps_pred，恢复干净样本：x0_pred = (x_t - sqrt(1 - alpha_bar) * eps_pred) / sqrt(alpha_bar)。这是 DDPM/DDIM sampler 使用的 x0-prediction 参数化。返回标量张量，并确保对 x_t 可微。$zh$, $zh$x_t 和 eps_pred 是 0 维 float32 标量张量；alpha_bar 是 (0, 1) 内的浮点数。$zh$),
+    ('flow-matching-target', $zh$Flow Matching Target$zh$, $zh$计算 flow-matching（conditional flow）回归目标。从噪声样本 x0 到干净样本 x1 的直线路径上，任意位置的目标 velocity 都是 v = x1 - x0。返回该向量，并确保对 x1 和 x0 都可微。$zh$, $zh$x0 和 x1 是长度相同的 float32 张量。$zh$),
+    ('euler-ode-step', $zh$Euler ODE Step$zh$, $zh$对 diffusion sampler 使用的 ODE 执行一次 Euler 积分。给定当前状态 x、velocity field v 和步长 dt，计算 x_next = x + dt * v。返回更新后的状态，并四舍五入到小数点后 6 位。$zh$, $zh$x 和 v 是长度相同的浮点数列表；dt > 0。$zh$),
+    ('classifier-free-guidance', $zh$Classifier-Free Guidance$zh$, $zh$组合 unconditional prediction 和 conditional prediction，实现 classifier-free guidance。给定 v_uncond、v_cond 和 guidance weight w，计算 v = v_uncond + w * (v_cond - v_uncond)。返回 guidance 后的向量，并四舍五入到小数点后 6 位。$zh$, $zh$v_uncond 和 v_cond 是长度相同的浮点数列表；w ≥ 0。$zh$),
+    ('diffusion-action-chunk-reshape', $zh$Diffusion Action Chunk Reshape$zh$, $zh$将（T, D）形状的 action chunk 按 row-major（time-major）顺序展平为长度 T*D 的一维向量。Diffusion policy 会预测展平后的 action chunk；该辅助函数负责将它重新整理为（T, D）表格。返回展平后的列表。$zh$, $zh$actions 是 T × D 的浮点数表格。$zh$),
+    ('replay-buffer', $zh$Replay Buffer$zh$, $zh$实现一个最小 Replay Buffer 类。add(transition) 方法追加 transition，sample(n) 方法返回最近 n 个 transition（按插入顺序排列，最新项在最后）。如果当前 transition 少于 n 个，则返回全部内容。Buffer 使用 Python 列表存储 transition。$zh$, $zh$n 是非负整数。$zh$),
+    ('action-chunking', $zh$Action Chunking$zh$, $zh$提取一个 action chunk，也就是从当前步骤开始的固定长度未来动作窗口。给定完整动作轨迹和 chunk 长度 h：如果剩余轨迹至少有 h 个动作，返回前 h 个动作；否则返回全部剩余动作，形成更短的 chunk。$zh$, $zh$actions 是非空列表；h 是正整数。$zh$),
+    ('normalize-robot-actions', $zh$归一化 Robot Actions$zh$, $zh$按维度归一化一批 robot actions。给定形状为（T, D）的数组，表示 T 个 D 维动作向量，分别在 T 行上对每个维度 d 做标准化：减去列均值，再除以总体标准差。如果某列标准差为零，则将该列保持为全 0。请使用 numpy。$zh$, $zh$actions 是形状为（T, D）的数组，且 T ≥ 1、D ≥ 1。$zh$),
+    ('mask-padded-actions', $zh$屏蔽 Padding Actions$zh$, $zh$将批量 action tensor 中的 padding 清零。给定形状为（B, T, D）的 padded actions 和长度向量 lens（B,），对样本 b 将所有 t ≥ lens[b] 的元素设为 0.0，合法位置保持不变。请使用 numpy。$zh$, $zh$每个 lens[b] 都在 1..T 范围内；actions 是（B, T, D）数组。$zh$),
+    ('trajectory-window-sampling', $zh$Trajectory Window Sampling$zh$, $zh$从一条轨迹中生成固定大小的所有滑动窗口。给定长度为 L 的列表和窗口大小 w，按顺序返回起始索引 i = 0..L-w 的所有长度为 w 的子列表，窗口总数恰好为 L - w + 1。$zh$, $zh$1 ≤ w ≤ L。$zh$),
+    ('episode-return', $zh$Episode Return$zh$, $zh$将一条 episode 的所有 reward 相加，计算未折扣的总回报。这是 robot-learning rollout 收集过程中评价 episode 的标量。返回总和，并四舍五入到小数点后 6 位。$zh$, $zh$rewards 是非空浮点数列表。$zh$),
+    ('temporal-ensemble', $zh$Temporal Ensemble$zh$, $zh$对共享重叠时间步的一组预测 action chunk 做等权平均。给定一组长度相同的一维 action chunk，计算各 chunk 的逐元素均值，并将每个值四舍五入到小数点后 6 位。这可以平滑 diffusion policy 在重叠预测上的输出。$zh$, $zh$chunks 是由至少 2 个等长一维浮点向量组成的列表。$zh$),
+    ('implement-layernorm', $zh$实现 LayerNorm$zh$, $zh$在张量最后一个维度上实现 LayerNorm。给定形状为（..., d）的输入 x，计算最后一维的均值和有偏方差，将其归一化为零均值和单位方差，再应用逐通道 weight 和 bias：y = ((x - mean) / sqrt(var + eps)) * weight + bias。该运算必须可微，因此请使用张量算子（torch.mean / torch.var / torch.sqrt）实现，不要使用原地 Python 循环。$zh$, $zh$x 的形状为（..., d），其中 d ≥ 2；weight 和 bias 是形状为（d,）的张量；eps 是正浮点数。$zh$)
+) as v(slug, title, description, constraints)
+where p.slug = v.slug;
+
+update public.coding_collections as c
+set
+  name = v.name,
+  description = v.description
+from (
+  values
+    ('embodied-ai-top-30', $zh$具身智能 Top 30$zh$, $zh$具身智能面试主线：覆盖 Transformer、RL 后训练、机器人学数学、Diffusion 和 Robot Learning 的 30 道高频 function/class 实现题。$zh$),
+    ('transformer-essentials', $zh$Transformer 基础$zh$, $zh$覆盖 LLM 面试常考的归一化、Attention、位置编码和采样基础模块。$zh$),
+    ('rl-post-training-core', $zh$RL 后训练核心$zh$, $zh$掌握 PPO / GRPO 后训练流程中的 advantage estimation、clipping 和 KL 机制。$zh$),
+    ('robotics-math-essentials', $zh$机器人学数学基础$zh$, $zh$学习具身系统和 manipulation policy 所需的 Quaternion、SE(3) 以及轨迹数学。$zh$),
+    ('diffusion-fundamentals', $zh$Diffusion 基础$zh$, $zh$覆盖 Diffusion policy 训练中的 noise schedule、forward process、flow matching 和 ODE sampling step。$zh$),
+    ('robot-learning-utilities', $zh$Robot Learning 工具$zh$, $zh$练习 imitation-learning pipeline 中常用的 replay buffer、action chunking、归一化和窗口采样工具。$zh$)
+) as v(slug, name, description)
+where c.slug = v.slug;
+
+update public.coding_test_cases as c
+set name = v.name
+from (
+  values
+    ('b2000000-0000-4000-8000-000000000201', $zh$正数向量$zh$),
+    ('b2000000-0000-4000-8000-000000000202', $zh$混合符号$zh$),
+    ('b2000000-0000-4000-8000-000000000206', $zh$长度 3$zh$),
+    ('b2000000-0000-4000-8000-000000000207', $zh$长度 1$zh$),
+    ('b2000000-0000-4000-8000-000000000210', $zh$空 Cache$zh$),
+    ('b2000000-0000-4000-8000-000000000211', $zh$已有条目$zh$),
+    ('b2000000-0000-4000-8000-000000000213', $zh$零角度$zh$),
+    ('b2000000-0000-4000-8000-000000000214', $zh$旋转$zh$),
+    ('b2000000-0000-4000-8000-000000000217', $zh$从 4 个 Token 中选择 Top 2$zh$),
+    ('b2000000-0000-4000-8000-000000000218', $zh$全部 Token$zh$),
+    ('b2000000-0000-4000-8000-000000000221', $zh$单头恒等映射$zh$),
+    ('b2000000-0000-4000-8000-000000000222', $zh$双 Token 聚焦$zh$),
+    ('b2000000-0000-4000-8000-000000000225', $zh$关注单个槽位$zh$),
+    ('b2000000-0000-4000-8000-000000000226', $zh$相同 Memory$zh$),
+    ('b2000000-0000-4000-8000-000000000229', $zh$单位奖励$zh$),
+    ('b2000000-0000-4000-8000-000000000230', $zh$不折扣$zh$),
+    ('b2000000-0000-4000-8000-000000000233', $zh$单位 Bootstrap$zh$),
+    ('b2000000-0000-4000-8000-000000000234', $zh$部分 Trace$zh$),
+    ('b2000000-0000-4000-8000-000000000236', $zh$增大$zh$),
+    ('b2000000-0000-4000-8000-000000000237', $zh$减小$zh$),
+    ('b2000000-0000-4000-8000-000000000239', $zh$未裁剪均值$zh$),
+    ('b2000000-0000-4000-8000-000000000240', $zh$裁剪 Ratio$zh$),
+    ('b2000000-0000-4000-8000-000000000243', $zh$线性分组$zh$),
+    ('b2000000-0000-4000-8000-000000000244', $zh$两个数值$zh$),
+    ('b2000000-0000-4000-8000-000000000247', $zh$相同策略$zh$),
+    ('b2000000-0000-4000-8000-000000000248', $zh$轻微漂移$zh$),
+    ('b2000000-0000-4000-8000-000000000250', $zh$零旋转$zh$),
+    ('b2000000-0000-4000-8000-000000000251', $zh$Yaw 90 度$zh$),
+    ('b2000000-0000-4000-8000-000000000255', $zh$恒等变换乘旋转$zh$),
+    ('b2000000-0000-4000-8000-000000000256', $zh$两次 90 度旋转$zh$),
+    ('b2000000-0000-4000-8000-000000000258', $zh$纯平移$zh$),
+    ('b2000000-0000-4000-8000-000000000259', $zh$绕 Z 轴旋转 90 度$zh$),
+    ('b2000000-0000-4000-8000-000000000261', $zh$恒等组合$zh$),
+    ('b2000000-0000-4000-8000-000000000262', $zh$平移组合$zh$),
+    ('b2000000-0000-4000-8000-000000000264', $zh$中点$zh$),
+    ('b2000000-0000-4000-8000-000000000265', $zh$两个点$zh$),
+    ('b2000000-0000-4000-8000-000000000268', $zh$两步$zh$),
+    ('b2000000-0000-4000-8000-000000000269', $zh$五步$zh$),
+    ('b2000000-0000-4000-8000-000000000271', $zh$无噪声$zh$),
+    ('b2000000-0000-4000-8000-000000000272', $zh$纯噪声$zh$),
+    ('b2000000-0000-4000-8000-000000000275', $zh$基础恢复$zh$),
+    ('b2000000-0000-4000-8000-000000000276', $zh$无噪声$zh$),
+    ('b2000000-0000-4000-8000-000000000279', $zh$从原点出发$zh$),
+    ('b2000000-0000-4000-8000-000000000280', $zh$偏移噪声$zh$),
+    ('b2000000-0000-4000-8000-000000000282', $zh$正向漂移$zh$),
+    ('b2000000-0000-4000-8000-000000000283', $zh$大步长$zh$),
+    ('b2000000-0000-4000-8000-000000000285', $zh$不使用 Guidance$zh$),
+    ('b2000000-0000-4000-8000-000000000286', $zh$标准权重$zh$),
+    ('b2000000-0000-4000-8000-000000000288', $zh$小 Chunk$zh$),
+    ('b2000000-0000-4000-8000-000000000289', $zh$单行$zh$),
+    ('b2000000-0000-4000-8000-000000000291', $zh$单次添加$zh$),
+    ('b2000000-0000-4000-8000-000000000292', $zh$采样最后 n 项$zh$),
+    ('b2000000-0000-4000-8000-000000000316', $zh$完整 Chunk$zh$),
+    ('b2000000-0000-4000-8000-000000000295', $zh$截断 Chunk$zh$),
+    ('b2000000-0000-4000-8000-000000000297', $zh$线性递增$zh$),
+    ('b2000000-0000-4000-8000-000000000298', $zh$两个样本$zh$),
+    ('b2000000-0000-4000-8000-000000000300', $zh$无 Padding$zh$),
+    ('b2000000-0000-4000-8000-000000000301', $zh$屏蔽第二步$zh$),
+    ('b2000000-0000-4000-8000-000000000303', $zh$大小 3$zh$),
+    ('b2000000-0000-4000-8000-000000000304', $zh$完整窗口$zh$),
+    ('b2000000-0000-4000-8000-000000000306', $zh$正奖励$zh$),
+    ('b2000000-0000-4000-8000-000000000307', $zh$混合符号$zh$),
+    ('b2000000-0000-4000-8000-000000000309', $zh$两个 Chunk$zh$),
+    ('b2000000-0000-4000-8000-000000000310', $zh$三个 Chunk$zh$),
+    ('b2000000-0000-4000-8000-000000000312', $zh$归一化两行$zh$)
+) as v(id, name)
+where c.id = v.id::uuid;
+
 commit;

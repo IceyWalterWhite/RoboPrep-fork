@@ -18,9 +18,9 @@ import type { PublicMLCaseResult } from "@/types/ml-judge";
 type CheckState = "passed" | "failed" | "info";
 
 const STATE_TEXT: Record<CheckState, string> = {
-  passed: "Passed",
-  failed: "Failed",
-  info: "Info",
+  passed: "通过",
+  failed: "失败",
+  info: "信息",
 };
 
 const STATE_STYLES: Record<CheckState, string> = {
@@ -30,8 +30,10 @@ const STATE_STYLES: Record<CheckState, string> = {
 };
 
 function StateIcon({ state }: { state: CheckState }) {
-  if (state === "passed") return <Check className="text-success-ink size-4 shrink-0" aria-hidden />;
-  if (state === "failed") return <X className="text-danger-ink size-4 shrink-0" aria-hidden />;
+  if (state === "passed")
+    return <Check className="text-success-ink size-4 shrink-0" aria-hidden />;
+  if (state === "failed")
+    return <X className="text-danger-ink size-4 shrink-0" aria-hidden />;
   return <Minus className="text-ink-tertiary size-4 shrink-0" aria-hidden />;
 }
 
@@ -50,7 +52,12 @@ function CheckRow({
         <StateIcon state={state} />
         <span className="text-ink">{label}</span>
       </span>
-      <span className={cn("text-right text-xs", detail ? STATE_STYLES[state] : "text-ink-tertiary")}>
+      <span
+        className={cn(
+          "text-right text-xs",
+          detail ? STATE_STYLES[state] : "text-ink-tertiary",
+        )}
+      >
         {detail ?? STATE_TEXT[state]}
       </span>
     </li>
@@ -68,8 +75,14 @@ function formatShape(shape: number[] | null): string | null {
   return shape ? `[${shape.join(", ")}]` : null;
 }
 
-export function MLCheckResults({ testCase, index }: { testCase: PublicMLCaseResult; index: number }) {
-  const label = testCase.name ?? `Test ${index + 1}`;
+export function MLCheckResults({
+  testCase,
+  index,
+}: {
+  testCase: PublicMLCaseResult;
+  index: number;
+}) {
+  const label = testCase.name ?? `测试 ${index + 1}`;
   const passed = testCase.status === "accepted";
   const rows: React.ReactNode[] = [];
 
@@ -78,38 +91,47 @@ export function MLCheckResults({ testCase, index }: { testCase: PublicMLCaseResu
     rows.push(
       <CheckRow
         key="value"
-        label="Value check"
+        label="数值检查"
         state={testCase.value.passed ? "passed" : "failed"}
-        {...(error ? { detail: `max abs error ${error}` } : {})}
+        {...(error ? { detail: `最大绝对误差 ${error}` } : {})}
       />,
     );
   }
   if (testCase.shape) {
     const expected = formatShape(testCase.shape.expectedShape);
     const received = formatShape(testCase.shape.receivedShape);
-    const detail =
-      testCase.shape.passed
-        ? expected
-          ? `shape ${expected}`
-          : null
-        : expected || received
-          ? `expected ${expected ?? "?"}, received ${received ?? "?"}`
-          : null;
+    const detail = testCase.shape.passed
+      ? expected
+        ? `形状 ${expected}`
+        : null
+      : expected || received
+        ? `预期 ${expected ?? "?"}，实际 ${received ?? "?"}`
+        : null;
     rows.push(
       <CheckRow
         key="shape"
-        label="Shape check"
+        label="形状检查"
         state={testCase.shape.passed ? "passed" : "failed"}
         {...(detail ? { detail } : {})}
       />,
     );
   }
   if (testCase.dtype) {
-    rows.push(<CheckRow key="dtype" label="Dtype check" state={testCase.dtype.passed ? "passed" : "failed"} />);
+    rows.push(
+      <CheckRow
+        key="dtype"
+        label="数据类型检查"
+        state={testCase.dtype.passed ? "passed" : "failed"}
+      />,
+    );
   }
   if (testCase.gradient) {
     rows.push(
-      <CheckRow key="gradient-forward" label="Forward value" state={testCase.gradient.forwardPassed ? "passed" : "failed"} />,
+      <CheckRow
+        key="gradient-forward"
+        label="前向值"
+        state={testCase.gradient.forwardPassed ? "passed" : "failed"}
+      />,
     );
     for (const tensor of testCase.gradient.tensors) {
       rows.push(
@@ -123,7 +145,11 @@ export function MLCheckResults({ testCase, index }: { testCase: PublicMLCaseResu
   }
   if (testCase.exception) {
     rows.push(
-      <CheckRow key="exception" label="Exception check" state={testCase.exception.passed ? "passed" : "failed"} />,
+      <CheckRow
+        key="exception"
+        label="异常检查"
+        state={testCase.exception.passed ? "passed" : "failed"}
+      />,
     );
   }
   if (testCase.performance) {
@@ -131,9 +157,11 @@ export function MLCheckResults({ testCase, index }: { testCase: PublicMLCaseResu
     rows.push(
       <CheckRow
         key="performance"
-        label="Runtime"
+        label="运行时间"
         state="info"
-        {...(runtime === null ? {} : { detail: `${Math.round(runtime)} ms (informational)` })}
+        {...(runtime === null
+          ? {}
+          : { detail: `${Math.round(runtime)} ms（仅供参考）` })}
       />,
     );
   }
@@ -142,18 +170,21 @@ export function MLCheckResults({ testCase, index }: { testCase: PublicMLCaseResu
     <div className="border-line-subtle rounded-sm border">
       <div className="bg-surface-muted flex flex-wrap items-center justify-between gap-2 px-3 py-2">
         <p className="text-ink text-sm font-medium">{label}</p>
-        <span className={cn("inline-flex items-center gap-1.5 text-xs font-medium", passed ? STATE_STYLES.passed : STATE_STYLES.failed)}>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 text-xs font-medium",
+            passed ? STATE_STYLES.passed : STATE_STYLES.failed,
+          )}
+        >
           <StateIcon state={passed ? "passed" : "failed"} />
-          {passed ? "Passed" : "Failed"}
+          {passed ? "通过" : "失败"}
         </span>
       </div>
       {rows.length > 0 ? (
-        <ul className="divide-line-subtle divide-y px-3 py-2">
-          {rows}
-        </ul>
+        <ul className="divide-line-subtle divide-y px-3 py-2">{rows}</ul>
       ) : (
         <p className="text-ink-tertiary px-3 py-2 text-xs">
-          No detailed checks are available for this test.
+          此测试没有可用的详细检查结果。
         </p>
       )}
       {testCase.message ? (
@@ -167,10 +198,10 @@ export function MLCheckResults({ testCase, index }: { testCase: PublicMLCaseResu
 
 /** `arg0` / `param:weight` → readable gradient labels. */
 export function humanizeGradientLabel(label: string): string {
-  if (label.startsWith("param:")) return `Parameter gradient · ${label.slice("param:".length)}`;
+  if (label.startsWith("param:")) return `参数梯度 · ${label.slice("param:".length)}`;
   if (/^arg\d+$/.test(label)) {
     const index = Number(label.slice(3));
-    return `Input gradient · argument ${index + 1}`;
+    return `输入梯度 · 参数 ${index + 1}`;
   }
-  return `Gradient · ${label}`;
+  return `梯度 · ${label}`;
 }

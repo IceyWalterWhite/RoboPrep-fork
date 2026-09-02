@@ -20,18 +20,20 @@ export class IngestionError extends Error {
 const RETRYABLE = new Set(["rate_limited", "timeout", "provider_outage"]);
 
 export function errorFromStatus(status: number): IngestionError {
-  if (status === 429) return new IngestionError("rate_limited", "parser provider rate limited the request");
-  if (status >= 500) return new IngestionError("provider_outage", `provider responded with ${status}`);
-  return new IngestionError("unknown", `provider responded with ${status}`);
+  if (status === 429)
+    return new IngestionError("rate_limited", "解析服务提供方请求过于频繁。");
+  if (status >= 500)
+    return new IngestionError("provider_outage", `解析服务提供方返回了 ${status}。`);
+  return new IngestionError("unknown", `解析服务提供方返回了 ${status}。`);
 }
 
 export function errorFromUnknown(error: unknown): IngestionError {
   if (error instanceof IngestionError) return error;
   if (error instanceof Error) {
     if (error.name === "AbortError" || error.name === "TimeoutError") {
-      return new IngestionError("timeout", "parser call timed out");
+      return new IngestionError("timeout", "解析服务调用超时。");
     }
     return new IngestionError("unknown", error.message.slice(0, 300));
   }
-  return new IngestionError("unknown", "unknown parser failure");
+  return new IngestionError("unknown", "解析服务发生未知错误。");
 }

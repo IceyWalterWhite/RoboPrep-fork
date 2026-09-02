@@ -12,7 +12,15 @@ import type {
   ReviewTask,
 } from "@/types/ingestion";
 
-import { mapDraft, mapEvent, mapJob, mapQuestionDraft, mapReviewTask, mapRoundDraft, mapSubmission } from "./mappers";
+import {
+  mapDraft,
+  mapEvent,
+  mapJob,
+  mapQuestionDraft,
+  mapReviewTask,
+  mapRoundDraft,
+  mapSubmission,
+} from "./mappers";
 
 /**
  * Ingestion query layer (Task 12). All access to the Week 6 tables goes
@@ -35,14 +43,15 @@ const QUESTION_DRAFT_COLUMNS =
 const JOB_COLUMNS =
   "id, submission_id, job_type, status, attempt_count, max_attempts, provider, model, parser_version, prompt_version, input_tokens, output_tokens, estimated_cost, error_code, error_message, started_at, finished_at, created_at, updated_at";
 
-const EVENT_COLUMNS = "id, submission_id, job_id, event_type, message, metadata, created_at";
+const EVENT_COLUMNS =
+  "id, submission_id, job_id, event_type, message, metadata, created_at";
 
 const REVIEW_TASK_COLUMNS =
   "id, submission_id, draft_id, status, assigned_to, priority, duplicate_score, review_notes, created_at, updated_at, completed_at";
 
 function requireAdmin(admin: SupabaseClient | null): SupabaseClient {
   if (!admin) {
-    throw new Error("The ingestion service is not configured (missing service-role key).");
+    throw new Error("数据导入服务未配置（缺少 service-role 密钥）。");
   }
   return admin;
 }
@@ -61,7 +70,7 @@ export async function getSubmission(
     .select(SUBMISSION_COLUMNS)
     .eq("id", submissionId)
     .maybeSingle();
-  if (error) throw new Error(`submission query failed: ${error.message}`);
+  if (error) throw new Error(`查询投稿失败：${error.message}`);
   return data ? mapSubmission(data) : null;
 }
 
@@ -89,7 +98,7 @@ export async function listSubmissions(
     query = query.in("status", options.statuses);
   }
   const { data, error } = await query;
-  if (error) throw new Error(`submission list failed: ${error.message}`);
+  if (error) throw new Error(`获取投稿列表失败：${error.message}`);
   return (data ?? []).map(mapSubmission);
 }
 
@@ -103,25 +112,31 @@ export async function updateSubmissionStatus(
     .from("interview_submissions")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", submissionId);
-  if (error) throw new Error(`submission status update failed: ${error.message}`);
+  if (error) throw new Error(`更新投稿状态失败：${error.message}`);
 }
 
 export async function updateSubmissionReview(
   admin: SupabaseClient | null,
   submissionId: string,
-  patch: { reviewNotes?: string | null; moderationFlags?: unknown; processedAt?: string | null },
+  patch: {
+    reviewNotes?: string | null;
+    moderationFlags?: unknown;
+    processedAt?: string | null;
+  },
 ): Promise<void> {
   const client = requireAdmin(admin);
   const { error } = await client
     .from("interview_submissions")
     .update({
       ...(patch.reviewNotes !== undefined ? { review_notes: patch.reviewNotes } : {}),
-      ...(patch.moderationFlags !== undefined ? { moderation_flags: patch.moderationFlags } : {}),
+      ...(patch.moderationFlags !== undefined
+        ? { moderation_flags: patch.moderationFlags }
+        : {}),
       ...(patch.processedAt !== undefined ? { processed_at: patch.processedAt } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", submissionId);
-  if (error) throw new Error(`submission review update failed: ${error.message}`);
+  if (error) throw new Error(`更新投稿审核信息失败：${error.message}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -138,7 +153,7 @@ export async function getDraftBySubmission(
     .select(DRAFT_COLUMNS)
     .eq("submission_id", submissionId)
     .maybeSingle();
-  if (error) throw new Error(`draft query failed: ${error.message}`);
+  if (error) throw new Error(`查询草稿失败：${error.message}`);
   return data ? mapDraft(data) : null;
 }
 
@@ -152,7 +167,7 @@ export async function listDrafts(
     .from("interview_drafts")
     .select(DRAFT_COLUMNS)
     .in("submission_id", submissionIds);
-  if (error) throw new Error(`draft list failed: ${error.message}`);
+  if (error) throw new Error(`获取草稿列表失败：${error.message}`);
   return new Map((data ?? []).map((row) => [row.submission_id, mapDraft(row)]));
 }
 
@@ -199,7 +214,7 @@ export async function insertDraft(
     })
     .select(DRAFT_COLUMNS)
     .single();
-  if (error) throw new Error(`draft insert failed: ${error.message}`);
+  if (error) throw new Error(`创建草稿失败：${error.message}`);
   return mapDraft(data);
 }
 
@@ -221,7 +236,9 @@ export async function updateDraft(
     .from("interview_drafts")
     .update({
       ...(patch.companyName !== undefined ? { company_name: patch.companyName } : {}),
-      ...(patch.positionTitle !== undefined ? { position_title: patch.positionTitle } : {}),
+      ...(patch.positionTitle !== undefined
+        ? { position_title: patch.positionTitle }
+        : {}),
       ...(patch.year !== undefined ? { year: patch.year } : {}),
       ...(patch.season !== undefined ? { season: patch.season } : {}),
       ...(patch.location !== undefined ? { location: patch.location } : {}),
@@ -230,7 +247,7 @@ export async function updateDraft(
       updated_at: new Date().toISOString(),
     })
     .eq("id", draftId);
-  if (error) throw new Error(`draft update failed: ${error.message}`);
+  if (error) throw new Error(`更新草稿失败：${error.message}`);
 }
 
 export async function archiveDraft(
@@ -254,7 +271,7 @@ export async function listRoundDrafts(
     .select(ROUND_DRAFT_COLUMNS)
     .eq("draft_id", draftId)
     .order("order_index");
-  if (error) throw new Error(`round draft query failed: ${error.message}`);
+  if (error) throw new Error(`查询轮次草稿失败：${error.message}`);
   return (data ?? []).map(mapRoundDraft);
 }
 
@@ -288,14 +305,18 @@ export async function insertRoundDraft(
     })
     .select(ROUND_DRAFT_COLUMNS)
     .single();
-  if (error) throw new Error(`round draft insert failed: ${error.message}`);
+  if (error) throw new Error(`创建轮次草稿失败：${error.message}`);
   return mapRoundDraft(data);
 }
 
 export async function updateRoundDraft(
   admin: SupabaseClient | null,
   roundDraftId: string,
-  patch: Partial<{ title: string | null; roundType: string; durationMinutes: number | null }>,
+  patch: Partial<{
+    title: string | null;
+    roundType: string;
+    durationMinutes: number | null;
+  }>,
 ): Promise<void> {
   const client = requireAdmin(admin);
   const { error } = await client
@@ -303,11 +324,13 @@ export async function updateRoundDraft(
     .update({
       ...(patch.title !== undefined ? { title: patch.title } : {}),
       ...(patch.roundType !== undefined ? { round_type: patch.roundType } : {}),
-      ...(patch.durationMinutes !== undefined ? { duration_minutes: patch.durationMinutes } : {}),
+      ...(patch.durationMinutes !== undefined
+        ? { duration_minutes: patch.durationMinutes }
+        : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", roundDraftId);
-  if (error) throw new Error(`round draft update failed: ${error.message}`);
+  if (error) throw new Error(`更新轮次草稿失败：${error.message}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -324,7 +347,7 @@ export async function listQuestionDrafts(
     .select(QUESTION_DRAFT_COLUMNS)
     .eq("draft_id", draftId)
     .order("order_index");
-  if (error) throw new Error(`question draft query failed: ${error.message}`);
+  if (error) throw new Error(`查询问题草稿失败：${error.message}`);
   return (data ?? []).map(mapQuestionDraft);
 }
 
@@ -361,7 +384,7 @@ export async function insertQuestionDraft(
     })
     .select(QUESTION_DRAFT_COLUMNS)
     .single();
-  if (error) throw new Error(`question draft insert failed: ${error.message}`);
+  if (error) throw new Error(`创建问题草稿失败：${error.message}`);
   return mapQuestionDraft(data);
 }
 
@@ -386,23 +409,37 @@ export async function updateQuestionDraft(
   const { error } = await client
     .from("interview_question_drafts")
     .update({
-      ...(patch.normalizedText !== undefined ? { normalized_text: patch.normalizedText } : {}),
-      ...(patch.questionType !== undefined ? { question_type: patch.questionType } : {}),
+      ...(patch.normalizedText !== undefined
+        ? { normalized_text: patch.normalizedText }
+        : {}),
+      ...(patch.questionType !== undefined
+        ? { question_type: patch.questionType }
+        : {}),
       ...(patch.difficulty !== undefined ? { difficulty: patch.difficulty } : {}),
-      ...(patch.candidateQuestionId !== undefined ? { candidate_question_id: patch.candidateQuestionId } : {}),
+      ...(patch.candidateQuestionId !== undefined
+        ? { candidate_question_id: patch.candidateQuestionId }
+        : {}),
       ...(patch.candidateCodingProblemId !== undefined
         ? { candidate_coding_problem_id: patch.candidateCodingProblemId }
         : {}),
-      ...(patch.matchConfidence !== undefined ? { match_confidence: patch.matchConfidence } : {}),
+      ...(patch.matchConfidence !== undefined
+        ? { match_confidence: patch.matchConfidence }
+        : {}),
       ...(patch.matchScore !== undefined ? { match_score: patch.matchScore } : {}),
-      ...(patch.topicSuggestions !== undefined ? { topic_suggestions: patch.topicSuggestions } : {}),
-      ...(patch.newCanonical !== undefined ? { new_canonical: patch.newCanonical } : {}),
-      ...(patch.reviewStatus !== undefined ? { review_status: patch.reviewStatus } : {}),
+      ...(patch.topicSuggestions !== undefined
+        ? { topic_suggestions: patch.topicSuggestions }
+        : {}),
+      ...(patch.newCanonical !== undefined
+        ? { new_canonical: patch.newCanonical }
+        : {}),
+      ...(patch.reviewStatus !== undefined
+        ? { review_status: patch.reviewStatus }
+        : {}),
       ...(patch.reviewNotes !== undefined ? { review_notes: patch.reviewNotes } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", questionDraftId);
-  if (error) throw new Error(`question draft update failed: ${error.message}`);
+  if (error) throw new Error(`更新问题草稿失败：${error.message}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -436,7 +473,7 @@ export async function createJob(
     })
     .select(JOB_COLUMNS)
     .single();
-  if (error) throw new Error(`job create failed: ${error.message}`);
+  if (error) throw new Error(`创建解析任务失败：${error.message}`);
   return mapJob(data);
 }
 
@@ -445,8 +482,12 @@ export async function getJob(
   jobId: string,
 ): Promise<IngestionJob | null> {
   const client = requireAdmin(admin);
-  const { data, error } = await client.from("ingestion_jobs").select(JOB_COLUMNS).eq("id", jobId).maybeSingle();
-  if (error) throw new Error(`job query failed: ${error.message}`);
+  const { data, error } = await client
+    .from("ingestion_jobs")
+    .select(JOB_COLUMNS)
+    .eq("id", jobId)
+    .maybeSingle();
+  if (error) throw new Error(`查询解析任务失败：${error.message}`);
   return data ? mapJob(data) : null;
 }
 
@@ -460,7 +501,7 @@ export async function listJobsForSubmission(
     .select(JOB_COLUMNS)
     .eq("submission_id", submissionId)
     .order("created_at", { ascending: false });
-  if (error) throw new Error(`job list failed: ${error.message}`);
+  if (error) throw new Error(`获取解析任务列表失败：${error.message}`);
   return (data ?? []).map(mapJob);
 }
 
@@ -484,18 +525,26 @@ export async function updateJob(
     .from("ingestion_jobs")
     .update({
       ...(patch.status !== undefined ? { status: patch.status } : {}),
-      ...(patch.attemptCount !== undefined ? { attempt_count: patch.attemptCount } : {}),
+      ...(patch.attemptCount !== undefined
+        ? { attempt_count: patch.attemptCount }
+        : {}),
       ...(patch.errorCode !== undefined ? { error_code: patch.errorCode } : {}),
-      ...(patch.errorMessage !== undefined ? { error_message: patch.errorMessage } : {}),
+      ...(patch.errorMessage !== undefined
+        ? { error_message: patch.errorMessage }
+        : {}),
       ...(patch.startedAt !== undefined ? { started_at: patch.startedAt } : {}),
       ...(patch.finishedAt !== undefined ? { finished_at: patch.finishedAt } : {}),
       ...(patch.inputTokens !== undefined ? { input_tokens: patch.inputTokens } : {}),
-      ...(patch.outputTokens !== undefined ? { output_tokens: patch.outputTokens } : {}),
-      ...(patch.estimatedCost !== undefined ? { estimated_cost: patch.estimatedCost } : {}),
+      ...(patch.outputTokens !== undefined
+        ? { output_tokens: patch.outputTokens }
+        : {}),
+      ...(patch.estimatedCost !== undefined
+        ? { estimated_cost: patch.estimatedCost }
+        : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", jobId);
-  if (error) throw new Error(`job update failed: ${error.message}`);
+  if (error) throw new Error(`更新解析任务失败：${error.message}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -504,7 +553,13 @@ export async function updateJob(
 
 export async function recordEvent(
   admin: SupabaseClient | null,
-  event: { submissionId: string; jobId?: string | null; eventType: string; message?: string; metadata?: Record<string, unknown> },
+  event: {
+    submissionId: string;
+    jobId?: string | null;
+    eventType: string;
+    message?: string;
+    metadata?: Record<string, unknown>;
+  },
 ): Promise<void> {
   const client = requireAdmin(admin);
   const { error } = await client.from("ingestion_events").insert({
@@ -514,7 +569,7 @@ export async function recordEvent(
     message: event.message ?? null,
     metadata: event.metadata ?? {},
   });
-  if (error) throw new Error(`event insert failed: ${error.message}`);
+  if (error) throw new Error(`记录导入事件失败：${error.message}`);
 }
 
 export async function listEvents(
@@ -527,7 +582,7 @@ export async function listEvents(
     .select(EVENT_COLUMNS)
     .eq("submission_id", submissionId)
     .order("created_at", { ascending: true });
-  if (error) throw new Error(`event list failed: ${error.message}`);
+  if (error) throw new Error(`获取导入事件失败：${error.message}`);
   return (data ?? []).map(mapEvent);
 }
 
@@ -537,7 +592,11 @@ export async function listEvents(
 
 export async function createReviewTask(
   admin: SupabaseClient | null,
-  task: { submissionId: string; draftId?: string | null; duplicateScore?: number | null },
+  task: {
+    submissionId: string;
+    draftId?: string | null;
+    duplicateScore?: number | null;
+  },
 ): Promise<ReviewTask> {
   const client = requireAdmin(admin);
   const { data, error } = await client
@@ -553,7 +612,7 @@ export async function createReviewTask(
     )
     .select(REVIEW_TASK_COLUMNS)
     .single();
-  if (error) throw new Error(`review task create failed: ${error.message}`);
+  if (error) throw new Error(`创建审核任务失败：${error.message}`);
   return mapReviewTask(data);
 }
 
@@ -567,7 +626,7 @@ export async function getReviewTask(
     .select(REVIEW_TASK_COLUMNS)
     .eq("submission_id", submissionId)
     .maybeSingle();
-  if (error) throw new Error(`review task query failed: ${error.message}`);
+  if (error) throw new Error(`查询审核任务失败：${error.message}`);
   return data ? mapReviewTask(data) : null;
 }
 
@@ -590,11 +649,13 @@ export async function updateReviewTask(
       ...(patch.status !== undefined ? { status: patch.status } : {}),
       ...(patch.assignedTo !== undefined ? { assigned_to: patch.assignedTo } : {}),
       ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
-      ...(patch.duplicateScore !== undefined ? { duplicate_score: patch.duplicateScore } : {}),
+      ...(patch.duplicateScore !== undefined
+        ? { duplicate_score: patch.duplicateScore }
+        : {}),
       ...(patch.reviewNotes !== undefined ? { review_notes: patch.reviewNotes } : {}),
       ...(patch.completedAt !== undefined ? { completed_at: patch.completedAt } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", taskId);
-  if (error) throw new Error(`review task update failed: ${error.message}`);
+  if (error) throw new Error(`更新审核任务失败：${error.message}`);
 }

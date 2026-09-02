@@ -17,12 +17,10 @@ export async function completeOnboardingAction(formData: FormData): Promise<void
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in?next=/onboarding");
 
-  const targetRoleCategory = ((formData.get("targetRoleCategory") as string) || "unsure") as
-    | "research"
-    | "engineering"
-    | "mixed"
-    | "unsure";
-  const primaryFocus = ((formData.get("primaryFocus") as string) || "both") as "knowledge" | "coding" | "both";
+  const targetRoleCategory = ((formData.get("targetRoleCategory") as string) ||
+    "unsure") as "research" | "engineering" | "mixed" | "unsure";
+  const primaryFocus = ((formData.get("primaryFocus") as string) || "both") as
+    "knowledge" | "coding" | "both";
   const skipped = formData.get("skipped") === "true";
 
   const supabase = await createClient();
@@ -34,7 +32,7 @@ export async function completeOnboardingAction(formData: FormData): Promise<void
       onboarding_completed_at: new Date().toISOString(),
     })
     .eq("id", user.id);
-  if (error) redirect("/onboarding?error=Could not save your preferences. Please try again.");
+  if (error) redirect("/onboarding?error=无法保存偏好设置，请稍后再试。");
 
   revalidatePath("/onboarding");
   if (skipped) redirect("/interviews");
@@ -45,7 +43,9 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in?next=/settings");
 
-  const displayName = ((formData.get("displayName") as string) || "").trim().slice(0, 60);
+  const displayName = ((formData.get("displayName") as string) || "")
+    .trim()
+    .slice(0, 60);
   const targetRoleCategory = (formData.get("targetRoleCategory") as string) || null;
   const primaryFocus = (formData.get("primaryFocus") as string) || null;
 
@@ -55,12 +55,17 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
     .update({
       ...(displayName ? { display_name: displayName } : {}),
       ...(targetRoleCategory
-        ? { target_role_category: targetRoleCategory as "research" | "engineering" | "mixed" | "unsure" }
+        ? {
+            target_role_category: targetRoleCategory as
+              "research" | "engineering" | "mixed" | "unsure",
+          }
         : {}),
-      ...(primaryFocus ? { primary_focus: primaryFocus as "knowledge" | "coding" | "both" } : {}),
+      ...(primaryFocus
+        ? { primary_focus: primaryFocus as "knowledge" | "coding" | "both" }
+        : {}),
     })
     .eq("id", user.id);
-  if (error) redirect("/settings?error=Could not save your settings.");
+  if (error) redirect("/settings?error=无法保存设置。");
 
   revalidatePath("/settings");
   redirect("/settings?saved=true");
@@ -76,14 +81,14 @@ export async function deleteAccountAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (!user) redirect("/sign-in?next=/settings");
   if (formData.get("confirm") !== "DELETE") {
-    redirect("/settings?error=Type DELETE to confirm account removal.");
+    redirect("/settings?error=请输入 DELETE 以确认删除账户。");
   }
 
   const admin = createAdminClient();
-  if (!admin) redirect("/settings?error=Account deletion is temporarily unavailable.");
+  if (!admin) redirect("/settings?error=账户删除功能暂时不可用。");
 
   const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) redirect("/settings?error=Account deletion failed. Please contact support.");
+  if (error) redirect("/settings?error=账户删除失败，请联系支持团队。");
 
   redirect("/?deleted=true");
 }

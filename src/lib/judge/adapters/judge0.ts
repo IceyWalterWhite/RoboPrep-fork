@@ -1,7 +1,12 @@
 import { serverEnv } from "@/lib/env.server";
 
 import { normalizeCompletedResult, normalizeJudgeStatus } from "../normalize";
-import type { JudgeAdapter, JudgeRequest, JudgeResult, JudgeSubmission } from "../types";
+import type {
+  JudgeAdapter,
+  JudgeRequest,
+  JudgeResult,
+  JudgeSubmission,
+} from "../types";
 
 interface Judge0SubmissionResponse {
   token?: string;
@@ -30,30 +35,36 @@ export class Judge0Adapter implements JudgeAdapter {
   }
 
   async submit(request: JudgeRequest): Promise<JudgeSubmission> {
-    const response = await fetch(`${this.baseUrl}/submissions?base64_encoded=false&wait=false`, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({
-        language_id: 71,
-        source_code: request.sourceCode,
-        stdin: request.stdin,
-        cpu_time_limit: Math.max(0.1, request.timeLimitMs / 1000),
-        memory_limit: request.memoryLimitMb * 1024,
-      }),
-      signal: AbortSignal.timeout(serverEnv.JUDGE_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error(`Judge provider returned HTTP ${response.status}`);
+    const response = await fetch(
+      `${this.baseUrl}/submissions?base64_encoded=false&wait=false`,
+      {
+        method: "POST",
+        headers: this.headers,
+        body: JSON.stringify({
+          language_id: 71,
+          source_code: request.sourceCode,
+          stdin: request.stdin,
+          cpu_time_limit: Math.max(0.1, request.timeLimitMs / 1000),
+          memory_limit: request.memoryLimitMb * 1024,
+        }),
+        signal: AbortSignal.timeout(serverEnv.JUDGE_TIMEOUT_MS),
+      },
+    );
+    if (!response.ok) throw new Error(`判题服务返回 HTTP ${response.status}`);
     const payload = (await response.json()) as Judge0SubmissionResponse;
-    if (!payload.token) throw new Error("Judge provider did not return a token");
+    if (!payload.token) throw new Error("判题服务没有返回任务 token");
     return { token: payload.token, status: "queued" };
   }
 
   async getResult(token: string, request: JudgeRequest): Promise<JudgeResult> {
-    const response = await fetch(`${this.baseUrl}/submissions/${encodeURIComponent(token)}?base64_encoded=false`, {
-      headers: this.headers,
-      signal: AbortSignal.timeout(serverEnv.JUDGE_TIMEOUT_MS),
-    });
-    if (!response.ok) throw new Error(`Judge provider returned HTTP ${response.status}`);
+    const response = await fetch(
+      `${this.baseUrl}/submissions/${encodeURIComponent(token)}?base64_encoded=false`,
+      {
+        headers: this.headers,
+        signal: AbortSignal.timeout(serverEnv.JUDGE_TIMEOUT_MS),
+      },
+    );
+    if (!response.ok) throw new Error(`判题服务返回 HTTP ${response.status}`);
     const payload = (await response.json()) as Judge0ResultResponse;
     const status = normalizeJudgeStatus(payload.status?.id);
     const result: JudgeResult = {

@@ -18,16 +18,16 @@ export const submissionRequestSchema = z.object({
     .string()
     .transform((value) => value.trim())
     .refine((value) => value.length >= SUBMISSION_MIN_CHARS, {
-      message: `Interview experience must be at least ${SUBMISSION_MIN_CHARS} characters.`,
+      message: `面试经历至少需要 ${SUBMISSION_MIN_CHARS} 个字符。`,
     })
     .refine((value) => value.length <= SUBMISSION_MAX_CHARS, {
-      message: `Interview experience must be at most ${SUBMISSION_MAX_CHARS} characters.`,
+      message: `面试经历最多只能有 ${SUBMISSION_MAX_CHARS} 个字符。`,
     }),
   sourceUrl: z
     .string()
     .trim()
     .url()
-    .refine((value) => /^https?:\/\//i.test(value), { message: "Only http(s) URLs are accepted." })
+    .refine((value) => /^https?:\/\//i.test(value), { message: "仅接受 http(s) URL。" })
     .optional()
     .or(z.literal("")),
   language: z.string().max(12).default("zh-CN"),

@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
   const submission = await getSubmissionById(id);
   if (!submission) {
-    return Response.json({ error: "Submission not found." }, { status: 404 });
+    return Response.json({ error: "未找到提交记录。" }, { status: 404 });
   }
   return Response.json(submission);
 }

@@ -9,21 +9,21 @@ import { Container } from "@/components/layout/container";
 import { Card } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Welcome — RoboPrep",
+  title: "欢迎 — RoboPrep",
   robots: { index: false, follow: false },
 };
 
 const ROLE_OPTIONS = [
-  { value: "research", label: "Research (VLA, world models, diffusion)" },
-  { value: "engineering", label: "Engineering (robot software, ML infra)" },
-  { value: "mixed", label: "Mixed research + engineering" },
-  { value: "unsure", label: "Not sure yet" },
+  { value: "research", label: "研究（VLA、世界模型、扩散）" },
+  { value: "engineering", label: "工程（机器人软件、ML 基础设施）" },
+  { value: "mixed", label: "研究 + 工程" },
+  { value: "unsure", label: "暂时不确定" },
 ] as const;
 
 const FOCUS_OPTIONS = [
-  { value: "knowledge", label: "Knowledge first" },
-  { value: "coding", label: "Coding first" },
-  { value: "both", label: "Both equally" },
+  { value: "knowledge", label: "先学知识" },
+  { value: "coding", label: "先做 Coding" },
+  { value: "both", label: "两者并重" },
 ] as const;
 
 /**
@@ -51,21 +51,38 @@ export default async function OnboardingPage({
   return (
     <Container className="py-14">
       <div className="mx-auto max-w-xl">
-        <h1 className="text-title text-ink font-semibold tracking-[-0.02em]">Welcome to RoboPrep</h1>
+        <h1 className="text-title text-ink font-semibold tracking-[-0.02em]">
+          欢迎来到 RoboPrep
+        </h1>
         <p className="text-ink-secondary mt-2 text-sm leading-relaxed">
-          Two quick questions to point you at the right starting content. Everything here is optional.
+          回答两个小问题，我们会为你推荐合适的起点。所有内容均可跳过。
         </p>
 
-        {error && <p role="alert" className="text-danger mt-4 text-sm">{error}</p>}
+        {error && (
+          <p role="alert" className="text-danger mt-4 text-sm">
+            {error}
+          </p>
+        )}
 
         <Card className="mt-6 p-6">
           <form action={completeOnboardingAction} className="flex flex-col gap-5">
             <fieldset>
-              <legend className="text-ink text-sm font-medium">What kind of role are you preparing for?</legend>
+              <legend className="text-ink text-sm font-medium">
+                你准备应聘哪类岗位？
+              </legend>
               <div className="mt-2 flex flex-col gap-2">
                 {ROLE_OPTIONS.map((option) => (
-                  <label key={option.value} className="text-ink-secondary flex items-center gap-2 text-sm">
-                    <input type="radio" name="targetRoleCategory" value={option.value} defaultChecked={option.value === "unsure"} className="accent-accent" />
+                  <label
+                    key={option.value}
+                    className="text-ink-secondary flex items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="radio"
+                      name="targetRoleCategory"
+                      value={option.value}
+                      defaultChecked={option.value === "unsure"}
+                      className="accent-accent"
+                    />
                     {option.label}
                   </label>
                 ))}
@@ -73,11 +90,20 @@ export default async function OnboardingPage({
             </fieldset>
 
             <fieldset>
-              <legend className="text-ink text-sm font-medium">Where do you want to start?</legend>
+              <legend className="text-ink text-sm font-medium">你想从哪里开始？</legend>
               <div className="mt-2 flex flex-col gap-2">
                 {FOCUS_OPTIONS.map((option) => (
-                  <label key={option.value} className="text-ink-secondary flex items-center gap-2 text-sm">
-                    <input type="radio" name="primaryFocus" value={option.value} defaultChecked={option.value === "both"} className="accent-accent" />
+                  <label
+                    key={option.value}
+                    className="text-ink-secondary flex items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="radio"
+                      name="primaryFocus"
+                      value={option.value}
+                      defaultChecked={option.value === "both"}
+                      className="accent-accent"
+                    />
                     {option.label}
                   </label>
                 ))}
@@ -85,9 +111,9 @@ export default async function OnboardingPage({
             </fieldset>
 
             <div className="border-line-subtle flex items-center gap-3 border-t pt-4">
-              <Button type="submit">Start practicing</Button>
+              <Button type="submit">开始练习</Button>
               <Button type="submit" name="skipped" value="true" variant="ghost">
-                Skip for now
+                暂时跳过
               </Button>
             </div>
           </form>

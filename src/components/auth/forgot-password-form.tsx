@@ -29,21 +29,30 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="border-line-subtle bg-surface shadow-card rounded-md border p-6">
-        <p className="text-ink font-medium">Check your email</p>
+        <p className="text-ink font-medium">请查收邮箱</p>
         <p className="text-ink-secondary mt-1 text-sm leading-relaxed">
-          If an account exists for {email}, a reset link is on its way. The link expires shortly.
+          如果 {email}{" "}
+          对应的账户存在，重置链接很快就会发送到你的邮箱。链接将在短时间后失效。
         </p>
-        <Link href="/sign-in" className="text-accent hover:text-accent-hover mt-4 inline-block text-sm font-medium">
-          Back to sign in
+        <Link
+          href="/sign-in"
+          className="text-accent hover:text-accent-hover mt-4 inline-block text-sm font-medium"
+        >
+          返回登录
         </Link>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-line-subtle bg-surface shadow-card rounded-md border p-6">
+    <form
+      onSubmit={handleSubmit}
+      className="border-line-subtle bg-surface shadow-card rounded-md border p-6"
+    >
       <div>
-        <label htmlFor="email" className="text-ink mb-1 block text-sm font-medium">Email</label>
+        <label htmlFor="email" className="text-ink mb-1 block text-sm font-medium">
+          邮箱
+        </label>
         <Input
           id="email"
           type="email"
@@ -54,7 +63,7 @@ export function ForgotPasswordForm() {
         />
       </div>
       <Button type="submit" disabled={pending} className="mt-4 w-full">
-        {pending ? "Sending…" : "Send reset link"}
+        {pending ? "发送中…" : "发送重置链接"}
       </Button>
     </form>
   );

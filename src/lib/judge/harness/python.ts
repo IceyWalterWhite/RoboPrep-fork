@@ -1,4 +1,8 @@
-import type { ExpectedValue, MLEvaluationRequest, StructuredTestCase } from "@/types/ml-judge";
+import type {
+  ExpectedValue,
+  MLEvaluationRequest,
+  StructuredTestCase,
+} from "@/types/ml-judge";
 
 import { PY_CASE_RUNTIME, PY_HELPERS } from "./helpers";
 import { PY_CLASS_ENTRY } from "./class";
@@ -41,7 +45,14 @@ export interface RunnerPayload {
   source: string;
   framework: string;
   entrypoint: { name: string; type: "function" | "class" };
-  config: { comparison: string; rtol: number; atol: number; check_shape: boolean; check_dtype: boolean; check_gradient: boolean };
+  config: {
+    comparison: string;
+    rtol: number;
+    atol: number;
+    check_shape: boolean;
+    check_dtype: boolean;
+    check_gradient: boolean;
+  };
   allow_imports: string[];
   cases: RunnerCasePayload[];
 }
@@ -66,18 +77,18 @@ def load_user_module(source):
                 handle.write(source)
             spec = importlib.util.spec_from_file_location("roboprep_user_submission", path)
             if spec is None or spec.loader is None:
-                raise HarnessError("could not create module spec")
+                raise HarnessError("无法创建模块描述")
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module, None
     except SyntaxError as exc:
         return None, {"category": "syntax_error",
-                      "message": "Syntax error at line %s: %s" % (exc.lineno, exc.msg)}
+                      "message": "第 %s 行存在语法错误：%s" % (exc.lineno, exc.msg)}
     except ImportError as exc:
         return None, {"category": "forbidden_import", "message": str(exc)}
     except Exception as exc:  # noqa: BLE001
         return None, {"category": "runtime_error",
-                      "message": "Importing the submission failed: %s: %s" % (type(exc).__name__, str(exc)[:200])}
+                      "message": "导入提交代码失败：%s：%s" % (type(exc).__name__, str(exc)[:200])}
 
 
 def install_import_guard(allow_imports):
@@ -116,7 +127,7 @@ def install_import_guard(allow_imports):
         if pkgroot in trusted:
             trusted.add(root)
             return real_import(name, globals, locals, fromlist, level)
-        raise ImportError("Import '%s' is not allowed for this problem." % name)
+        raise ImportError("该题目不允许导入 '%s'。" % name)
 
     builtins.__import__ = guarded_import
 
@@ -156,7 +167,7 @@ def evaluate_case(case, invocation):
     if call["error"] is not None:
         error = call["error"]
         result["error_category"] = "runtime_error"
-        result["message"] = "Raised %s: %s" % (type(error).__name__, str(error)[:200])
+        result["message"] = "抛出 %s：%s" % (type(error).__name__, str(error)[:200])
         return result
 
     output = call["output"]
@@ -274,7 +285,7 @@ def emit(result):
     encoded = json.dumps(result, separators=(",", ":"), default=repr)
     if len(encoded) > MAX_RESULT_JSON_CHARS:
         encoded = json.dumps({"cases": [], "entrypoint_error": {
-            "category": "output_limit", "message": "The result payload exceeded the output limit."}})
+            "category": "output_limit", "message": "评测结果超过输出限制。"}})
     sys.stdout.write(RESULT_SENTINEL + encoded + "\\n")
     sys.stdout.flush()
 
@@ -285,7 +296,10 @@ if __name__ == "__main__":
 }
 
 /** TS request → runner payload (snake_case, sanitized). */
-export function buildRunnerPayload(request: MLEvaluationRequest, allowImports: string[]): RunnerPayload {
+export function buildRunnerPayload(
+  request: MLEvaluationRequest,
+  allowImports: string[],
+): RunnerPayload {
   return {
     source: request.sourceCode,
     framework: request.framework,
@@ -323,12 +337,19 @@ function mapExpected(expected: ExpectedValue): Record<string, unknown> {
     case "dtype":
       return { kind: "dtype", dtype: expected.dtype };
     case "exception":
-      return { kind: "exception", exception_type: expected.exceptionType, message_pattern: expected.messagePattern ?? null };
+      return {
+        kind: "exception",
+        exception_type: expected.exceptionType,
+        message_pattern: expected.messagePattern ?? null,
+      };
     case "gradient":
       return {
         kind: "gradient",
         forward: expected.forward,
-        gradients: expected.gradients.map((entry) => ({ label: entry.label, value: entry.value })),
+        gradients: expected.gradients.map((entry) => ({
+          label: entry.label,
+          value: entry.value,
+        })),
       };
     case "performance":
       return { kind: "performance", max_runtime_ms: expected.maxRuntimeMs ?? null };

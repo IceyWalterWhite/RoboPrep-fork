@@ -29,7 +29,10 @@ export const CONFIDENCE_LOW = 0.6;
  * Valid submission status transitions (Task 12). Every transition in the
  * ingestion service goes through this table.
  */
-export const SUBMISSION_TRANSITIONS: Record<SubmissionStatus, readonly SubmissionStatus[]> = {
+export const SUBMISSION_TRANSITIONS: Record<
+  SubmissionStatus,
+  readonly SubmissionStatus[]
+> = {
   submitted: ["processing", "failed", "rejected"],
   processing: ["parsed", "needs_review", "failed"],
   parsed: ["needs_review", "approved", "rejected", "failed"],
@@ -50,47 +53,50 @@ export function canTransition(from: SubmissionStatus, to: SubmissionStatus): boo
  */
 export const USER_FACING_STATUS: Record<
   SubmissionStatus,
-  { label: string; description: string; tone: "neutral" | "pending" | "success" | "attention" }
+  {
+    label: string;
+    description: string;
+    tone: "neutral" | "pending" | "success" | "attention";
+  }
 > = {
   submitted: {
-    label: "Received",
-    description: "Your submission is in the queue for processing.",
+    label: "已接收",
+    description: "你的投稿已进入处理队列。",
     tone: "neutral",
   },
   processing: {
-    label: "Processing",
-    description: "We are extracting the structure of your interview.",
+    label: "处理中",
+    description: "我们正在提取面经结构。",
     tone: "pending",
   },
   parsed: {
-    label: "Under review",
-    description: "A reviewer is checking the parsed structure.",
+    label: "审核中",
+    description: "审核员正在检查解析后的结构。",
     tone: "pending",
   },
   needs_review: {
-    label: "Under review",
-    description: "A reviewer is checking the parsed structure.",
+    label: "审核中",
+    description: "审核员正在检查解析后的结构。",
     tone: "pending",
   },
   approved: {
-    label: "Approved",
-    description: "The review passed. Publication is the final step.",
+    label: "已批准",
+    description: "审核已通过，接下来将进行发布。",
     tone: "success",
   },
   rejected: {
-    label: "Not published",
-    description:
-      "After review, this submission was not published. You are welcome to submit a more detailed experience.",
+    label: "未发布",
+    description: "审核后，这份投稿未被发布。欢迎补充更详细的经历后再次投稿。",
     tone: "attention",
   },
   failed: {
-    label: "Needs attention",
-    description: "Automatic processing could not complete. Our team will take a look.",
+    label: "需要处理",
+    description: "自动处理未能完成，我们的团队会进一步查看。",
     tone: "attention",
   },
   published: {
-    label: "Published",
-    description: "Your interview is now part of RoboPrep. Thank you for contributing!",
+    label: "已发布",
+    description: "你的面经现已成为 RoboPrep 的一部分，感谢你的贡献！",
     tone: "success",
   },
 };

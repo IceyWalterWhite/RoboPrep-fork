@@ -22,13 +22,19 @@ export const publicEnvSchema = z.object({
 
 /** Server-only additions. Never prefix these with `NEXT_PUBLIC_`. */
 export const serverEnvSchema = publicEnvSchema.extend({
-  SUPABASE_SERVICE_ROLE_KEY: z
-    .preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional()),
+  SUPABASE_SERVICE_ROLE_KEY: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
   JUDGE_PROVIDER: z.enum(["local", "judge0"]).default("local"),
-  JUDGE0_BASE_URL: z
-    .preprocess((value) => (value === "" ? undefined : value), z.url().optional()),
-  JUDGE0_API_KEY: z
-    .preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional()),
+  JUDGE0_BASE_URL: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.url().optional(),
+  ),
+  JUDGE0_API_KEY: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
   PYTHON_EXECUTABLE: z.string().min(1).default("python3"),
   JUDGE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(15000),
 });
@@ -46,8 +52,8 @@ function formatError(scope: string, issues: readonly Issue[]): string {
     })
     .join("\n");
   return (
-    `[env] Invalid ${scope} environment configuration:\n${details}\n` +
-    "Copy `.env.example` to `.env.local` and fill in your Supabase credentials."
+    `[环境变量] ${scope} 配置无效：\n${details}\n` +
+    "请将 `.env.example` 复制为 `.env.local`，并填写 Supabase 凭据。"
   );
 }
 
@@ -76,7 +82,7 @@ export function parseEnv<S extends z.ZodType>(
     throw new Error(message);
   }
 
-  console.warn(`${message}\n[env] Falling back to placeholder values (${scope}).`);
+  console.warn(`${message}\n[环境变量] 将使用 ${scope} 的占位配置继续运行。`);
   return fallback;
 }
 

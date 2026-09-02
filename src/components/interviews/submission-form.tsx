@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const SEASONS = [
-  { value: "spring", label: "Spring" },
-  { value: "summer", label: "Summer" },
-  { value: "fall", label: "Fall" },
-  { value: "winter", label: "Winter" },
+  { value: "spring", label: "春季" },
+  { value: "summer", label: "夏季" },
+  { value: "fall", label: "秋季" },
+  { value: "winter", label: "冬季" },
 ] as const;
 
 const MAX_CHARS = 50_000;
@@ -52,30 +52,50 @@ export function SubmissionForm() {
       });
       const body = (await response.json()) as { id?: string; error?: string };
       if (!response.ok || !body.id) {
-        setError(body.error ?? "Something went wrong. Please try again.");
+        setError(body.error ?? "出了点问题，请稍后再试。");
         setSubmitting(false);
         return;
       }
       router.push(`/interviews/submissions/${body.id}`);
     } catch {
-      setError("Network error. Please check your connection and try again.");
+      setError("网络错误，请检查连接后重试。");
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-line-subtle bg-surface shadow-card mt-8 max-w-2xl rounded-md border p-6 sm:p-8">
+    <form
+      onSubmit={handleSubmit}
+      className="border-line-subtle bg-surface shadow-card mt-8 max-w-2xl rounded-md border p-6 sm:p-8"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Company" htmlFor="companyHint" hint="Optional">
-          <Input id="companyHint" name="companyHint" placeholder="e.g. 字节跳动" maxLength={120} />
+        <Field label="公司" htmlFor="companyHint" hint="可选">
+          <Input
+            id="companyHint"
+            name="companyHint"
+            placeholder="例如：字节跳动"
+            maxLength={120}
+          />
         </Field>
-        <Field label="Position" htmlFor="positionHint" hint="Optional">
-          <Input id="positionHint" name="positionHint" placeholder="e.g. 具身智能算法实习生" maxLength={120} />
+        <Field label="岗位" htmlFor="positionHint" hint="可选">
+          <Input
+            id="positionHint"
+            name="positionHint"
+            placeholder="例如：具身智能算法实习生"
+            maxLength={120}
+          />
         </Field>
-        <Field label="Year" htmlFor="yearHint" hint="Optional">
-          <Input id="yearHint" name="yearHint" type="number" min={1990} max={2100} placeholder="2026" />
+        <Field label="年份" htmlFor="yearHint" hint="可选">
+          <Input
+            id="yearHint"
+            name="yearHint"
+            type="number"
+            min={1990}
+            max={2100}
+            placeholder="2026"
+          />
         </Field>
-        <Field label="Season" htmlFor="seasonHint" hint="Optional">
+        <Field label="季节" htmlFor="seasonHint" hint="可选">
           <select
             id="seasonHint"
             name="seasonHint"
@@ -84,19 +104,26 @@ export function SubmissionForm() {
           >
             <option value="">—</option>
             {SEASONS.map((season) => (
-              <option key={season.value} value={season.value}>{season.label}</option>
+              <option key={season.value} value={season.value}>
+                {season.label}
+              </option>
             ))}
           </select>
         </Field>
-        <Field label="Location" htmlFor="locationHint" hint="Optional">
-          <Input id="locationHint" name="locationHint" placeholder="e.g. 北京" maxLength={120} />
+        <Field label="地点" htmlFor="locationHint" hint="可选">
+          <Input
+            id="locationHint"
+            name="locationHint"
+            placeholder="例如：北京"
+            maxLength={120}
+          />
         </Field>
       </div>
 
       <div className="mt-6">
         <div className="mb-1.5 flex items-baseline justify-between">
           <label htmlFor="rawText" className="text-ink text-sm font-medium">
-            Interview experience <span className="text-danger">*</span>
+            面试经历 <span className="text-danger">*</span>
           </label>
           <span className="text-ink-tertiary text-xs tabular-nums">
             {text.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
@@ -110,17 +137,19 @@ export function SubmissionForm() {
           maxLength={MAX_CHARS}
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder={"描述这次面试：公司、轮次、每轮被问了什么问题……\n\nDescribe the interview: rounds, questions asked, and any context you remember."}
+          placeholder={
+            "描述这次面试：公司、轮次、每轮被问了什么问题，以及你记得的其他背景……"
+          }
           className="min-h-56"
         />
         <p className="text-ink-tertiary mt-1.5 text-xs">
-          {MIN_CHARS}–{MAX_CHARS.toLocaleString()} characters. Do not include personal contact
-          information (email, phone, WeChat) in the text.
+          {MIN_CHARS}–{MAX_CHARS.toLocaleString()}{" "}
+          个字符。请勿在内容中填写个人联系方式（邮箱、电话、微信）。
         </p>
       </div>
 
       <div className="mt-4">
-        <Field label="Source URL" htmlFor="sourceUrl" hint="Optional, http(s) only">
+        <Field label="来源 URL" htmlFor="sourceUrl" hint="可选，仅支持 http(s)">
           <Input id="sourceUrl" name="sourceUrl" type="url" placeholder="https://…" />
         </Field>
       </div>
@@ -133,13 +162,12 @@ export function SubmissionForm() {
 
       <div className="border-line-subtle mt-6 border-t pt-5">
         <Button type="submit" disabled={submitting || text.trim().length < MIN_CHARS}>
-          {submitting ? "Submitting…" : "Submit for review"}
+          {submitting ? "提交中…" : "提交审核"}
         </Button>
         <p className="text-ink-tertiary mt-2 text-xs">
-          By submitting you confirm this is your own experience (or a properly attributed public
-          source) and understand that: it will be <strong>reviewed by a human</strong>, structured
-          into questions, <strong>published anonymously</strong> if approved — never instantly or
-          automatically — and never shown with your identity. You can check the status anytime.
+          提交即表示你确认这是自己的经历（或已正确注明出处的公开来源），并理解：内容会经过
+          <strong>人工审核</strong>、整理为问题；审核通过后才会<strong>匿名发布</strong>
+          ，不会即时或自动发布，也不会展示你的身份。你可以随时查看投稿状态。
         </p>
       </div>
     </form>

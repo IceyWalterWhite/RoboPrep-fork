@@ -14,19 +14,25 @@ import type { CodingSubmission, EvaluationGroupSummary } from "@/types/coding";
  * expected tensors and reference gradients are absent by construction.
  * Program-mode submissions stay compact: status, score and time only.
  */
-export function SubmissionHistory({ submissions }: { submissions: CodingSubmission[] }) {
+export function SubmissionHistory({
+  submissions,
+}: {
+  submissions: CodingSubmission[];
+}) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between gap-3">
-        <CardTitle>Submission history</CardTitle>
+        <CardTitle>提交历史</CardTitle>
         {submissions.length > 0 ? (
-          <span className="text-ink-tertiary text-xs">{submissions.length} latest</span>
+          <span className="text-ink-tertiary text-xs">
+            最近 {submissions.length} 条
+          </span>
         ) : null}
       </CardHeader>
       <CardContent>
         {submissions.length === 0 ? (
           <p className="text-ink-secondary text-sm">
-            Your submissions will appear here after you sign in and submit.
+            登录并提交后，你的提交记录会显示在这里。
           </p>
         ) : (
           <ul className="border-line-subtle divide-line-subtle divide-y rounded-sm border">
@@ -58,7 +64,9 @@ function SubmissionRow({ submission }: { submission: CodingSubmission }) {
             ) : (
               <CircleDot className="text-ink-tertiary size-4 shrink-0" aria-hidden />
             )}
-            <span className="text-ink truncate text-sm">{JUDGE_STATUS_LABELS[submission.status]}</span>
+            <span className="text-ink truncate text-sm">
+              {JUDGE_STATUS_LABELS[submission.status]}
+            </span>
             <Badge variant="default">{submission.score ?? 0}%</Badge>
           </div>
           <span className="text-ink-tertiary inline-flex items-center gap-1 text-xs">
@@ -84,7 +92,13 @@ function GroupBreakdown({ groups }: { groups: EvaluationGroupSummary[] }) {
         return (
           <li key={group.group} className="text-xs">
             <span className="text-ink-tertiary">{label(group.group)} </span>
-            <span className={allPassed ? "text-success-ink font-medium" : "text-danger-ink font-medium"}>
+            <span
+              className={
+                allPassed
+                  ? "text-success-ink font-medium"
+                  : "text-danger-ink font-medium"
+              }
+            >
               {group.passed}/{group.total}
             </span>
           </li>
@@ -95,11 +109,11 @@ function GroupBreakdown({ groups }: { groups: EvaluationGroupSummary[] }) {
 }
 
 function label(group: EvaluationGroupSummary["group"]): string {
-  return CODING_TEST_GROUP_LABELS[group] ?? group;
+  return CODING_TEST_GROUP_LABELS[group] ?? "其他检查";
 }
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("zh-CN", {
     month: "short",
     day: "numeric",
     hour: "numeric",

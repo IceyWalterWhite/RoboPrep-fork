@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCodingProblemBySlug, getCodingJudgeDefinition, getMLJudgeDefinition } from "@/lib/coding/queries";
+import {
+  getCodingProblemBySlug,
+  getCodingJudgeDefinition,
+  getMLJudgeDefinition,
+} from "@/lib/coding/queries";
 import { mlScore, mlSubmissionCaseRows, runMLCases } from "@/lib/judge/execute-ml";
 import { checkRateLimit } from "@/lib/judge/rate-limit";
 import { createJudgeService, judgeCases } from "@/lib/judge/service";
@@ -15,7 +19,7 @@ const SUBMIT_WINDOW_MS = 5 * 60 * 1000;
 export async function POST(request: Request) {
   if (!isFeatureEnabled("coding_judge")) {
     return Response.json(
-      { error: "The coding judge is temporarily offline. Browsing and progress are unaffected." },
+      { error: "Coding 判题服务暂时离线，浏览和进度功能不受影响。" },
       { status: 503 },
     );
   }
@@ -29,25 +33,25 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return Response.json({ error: "Sign in to submit a solution." }, { status: 401 });
+    return Response.json({ error: "请登录后提交解答。" }, { status: 401 });
   }
 
   const rate = checkRateLimit(`submit:${user.id}`, SUBMIT_LIMIT, SUBMIT_WINDOW_MS);
   if (!rate.allowed) {
     return Response.json(
-      { error: "Too many submissions. Please wait before trying again." },
+      { error: "提交次数过多，请稍后再试。" },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }
 
   const publicProblem = await getCodingProblemBySlug(parsed.data.slug);
   if (!publicProblem) {
-    return Response.json({ error: "Coding problem not found." }, { status: 404 });
+    return Response.json({ error: "未找到 Coding 题目。" }, { status: 404 });
   }
 
   const admin = createAdminClient();
   if (!admin) {
-    return Response.json({ error: "The submission service is not configured." }, { status: 503 });
+    return Response.json({ error: "提交服务尚未配置。" }, { status: 503 });
   }
 
   // Structured problems take the ML path (hidden tests, redacted feedback,
@@ -63,15 +67,20 @@ export async function POST(request: Request) {
 
   const definition = await getCodingJudgeDefinition(parsed.data.slug);
   if (!definition) {
-    return Response.json({ error: "The submission judge is not configured yet." }, { status: 503 });
+    return Response.json({ error: "提交判题服务尚未配置。" }, { status: 503 });
   }
   if (definition.tests.length === 0) {
-    return Response.json({ error: "This problem has no test cases yet." }, { status: 422 });
+    return Response.json({ error: "这道题暂时没有测试用例。" }, { status: 422 });
   }
 
-  const submissionId = await createSubmission(admin, user.id, definition.id, parsed.data.sourceCode);
+  const submissionId = await createSubmission(
+    admin,
+    user.id,
+    definition.id,
+    parsed.data.sourceCode,
+  );
   if (!submissionId) {
-    return Response.json({ error: "Could not create the submission." }, { status: 500 });
+    return Response.json({ error: "无法创建提交记录。" }, { status: 500 });
   }
   await markRunning(admin, submissionId, user.id);
 
@@ -102,7 +111,8 @@ export async function POST(request: Request) {
       score: judged.score,
       runtime_ms: judged.runtimeMs,
       memory_kb: judged.memoryKb,
-      error_message: judged.status === "internal_error" ? "The judge did not return a usable result." : null,
+      error_message:
+        judged.status === "internal_error" ? "判题服务没有返回可用结果。" : null,
       completed_at: completedAt,
     })
     .eq("id", submissionId)
@@ -110,7 +120,7 @@ export async function POST(request: Request) {
 
   if (updateError) {
     console.error("[coding] failed to finish submission", updateError);
-    return Response.json({ error: "The submission finished but could not be saved." }, { status: 500 });
+    return Response.json({ error: "提交已完成，但无法保存结果。" }, { status: 500 });
   }
 
   const caseRows = judged.cases.map((result) => ({
@@ -122,7 +132,9 @@ export async function POST(request: Request) {
     stdout: result.stdout,
     stderr: result.stderr,
   }));
-  const { error: casesError } = await admin.from("coding_submission_cases").insert(caseRows);
+  const { error: casesError } = await admin
+    .from("coding_submission_cases")
+    .insert(caseRows);
   if (casesError) console.error("[coding] failed to save submission cases", casesError);
 
   return Response.json({
@@ -163,12 +175,12 @@ async function submitStructured(options: {
   const { admin, userId, slug, sourceCode } = options;
   const definition = await getMLJudgeDefinition(slug);
   if (!definition) {
-    return Response.json({ error: "This problem has no structured test cases yet." }, { status: 422 });
+    return Response.json({ error: "这道题暂时没有结构化测试用例。" }, { status: 422 });
   }
 
   const submissionId = await createSubmission(admin, userId, definition.id, sourceCode);
   if (!submissionId) {
-    return Response.json({ error: "Could not create the submission." }, { status: 500 });
+    return Response.json({ error: "无法创建提交记录。" }, { status: 500 });
   }
   await markRunning(admin, submissionId, userId);
 
@@ -184,7 +196,7 @@ async function submitStructured(options: {
       runtime_ms: outcome.runtimeMs,
       memory_kb: null,
       error_message:
-        outcome.status === "internal_error" ? "The evaluator did not return a usable result." : null,
+        outcome.status === "internal_error" ? "评测器没有返回可用结果。" : null,
       evaluation_summary: outcome.summary as never,
       completed_at: completedAt,
     })
@@ -193,15 +205,18 @@ async function submitStructured(options: {
 
   if (updateError) {
     console.error("[coding] failed to finish ML submission", updateError);
-    return Response.json({ error: "The submission finished but could not be saved." }, { status: 500 });
+    return Response.json({ error: "提交已完成，但无法保存结果。" }, { status: 500 });
   }
 
   const caseRows = mlSubmissionCaseRows(outcome.evaluation).map((row) => ({
     submission_id: submissionId,
     ...row,
   }));
-  const { error: casesError } = await admin.from("coding_submission_cases").insert(caseRows);
-  if (casesError) console.error("[coding] failed to save ML submission cases", casesError);
+  const { error: casesError } = await admin
+    .from("coding_submission_cases")
+    .insert(caseRows);
+  if (casesError)
+    console.error("[coding] failed to save ML submission cases", casesError);
 
   return Response.json({
     mode: definition.evaluationMode,
@@ -226,7 +241,13 @@ async function createSubmission(
 ): Promise<string | null> {
   const { data: submission, error } = await admin
     .from("coding_submissions")
-    .insert({ user_id: userId, problem_id: problemId, language: "python", source_code: sourceCode, status: "queued" })
+    .insert({
+      user_id: userId,
+      problem_id: problemId,
+      language: "python",
+      source_code: sourceCode,
+      status: "queued",
+    })
     .select("id")
     .single();
   if (error || !submission) {
@@ -253,8 +274,8 @@ async function parseRequest(request: Request) {
     const body: unknown = await request.json();
     const result = codingExecutionRequestSchema.safeParse(body);
     if (result.success) return result;
-    return { success: false as const, error: "Invalid coding request." };
+    return { success: false as const, error: "Coding 请求无效。" };
   } catch {
-    return { success: false as const, error: "Request body must be valid JSON." };
+    return { success: false as const, error: "请求内容必须是有效的 JSON。" };
   }
 }

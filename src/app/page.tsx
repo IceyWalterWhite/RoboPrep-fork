@@ -11,28 +11,27 @@ import {
   getRecentQuestions,
   getTopics,
 } from "@/lib/data/queries";
+import { displayEnum, displaySeason } from "@/lib/interviews/helpers";
 
 const pillars = [
   {
     href: "/interviews",
     icon: MessagesSquare,
-    title: "Real Interviews",
-    description:
-      "Interview experiences organised by company, position and year — including the exact wording candidates were asked.",
+    title: "真实面试",
+    description: "按公司、岗位和年份整理面试经历，保留候选人实际被问到的原话。",
   },
   {
     href: "/knowledge",
     icon: BookOpen,
-    title: "Knowledge",
-    description:
-      "Canonical questions for Embodied AI, each with a quick answer, a deep dive and the follow-ups interviewers reach for.",
+    title: "知识库",
+    description: "整理具身智能高频知识题，提供快速回答、深入讲解以及面试官常见追问。",
   },
   {
     href: "/coding",
     icon: Code2,
     title: "Coding",
     description:
-      "Robotics and ML exercises with real constraints — kinematics, control loops, batching and inference budgets.",
+      "围绕真实约束设计机器人和 ML 练习，覆盖运动学、控制循环、批处理与推理预算。",
   },
 ];
 
@@ -54,23 +53,22 @@ export default async function HomePage() {
             RoboPrep
           </p>
           <h1 className="text-display text-ink max-w-3xl font-semibold">
-            Master Embodied AI.
+            掌握具身智能面试。
             <br />
-            One question at a time.
+            一次一题，稳步提升。
           </h1>
           <p className="text-ink-secondary max-w-xl text-[1.0625rem] leading-relaxed">
-            Real interview experiences, essential knowledge, and hands-on coding for
-            Embodied AI roles.
+            真实面试经历、核心知识与 Coding 练习，助你准备具身智能岗位。
           </p>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row">
             <Link href="/knowledge" className={buttonVariants({ size: "lg" })}>
-              Start Practicing
+              开始练习
             </Link>
             <Link
               href="/interviews"
               className={buttonVariants({ variant: "secondary", size: "lg" })}
             >
-              Explore Interviews
+              浏览面试
             </Link>
           </div>
         </Container>
@@ -95,7 +93,7 @@ export default async function HomePage() {
                   href={pillar.href}
                   className="text-accent inline-flex items-center gap-1 text-sm font-medium hover:underline"
                 >
-                  Open {pillar.title}
+                  查看{pillar.title}
                   <ArrowRight className="size-3.5" aria-hidden />
                 </Link>
               </CardContent>
@@ -110,25 +108,23 @@ export default async function HomePage() {
           <div className="mb-8 flex items-end justify-between gap-4">
             <div className="flex flex-col gap-1">
               <h2 className="text-title text-ink font-semibold tracking-[-0.02em]">
-                Latest interviews
+                最新面试
               </h2>
-              <p className="text-ink-secondary text-sm">
-                Recently published candidate reports.
-              </p>
+              <p className="text-ink-secondary text-sm">最近发布的候选人面经。</p>
             </div>
             <Link
               href="/interviews"
               className="text-accent shrink-0 text-sm font-medium hover:underline"
             >
-              View all
+              查看全部
             </Link>
           </div>
 
           {interviews.length === 0 ? (
             <EmptyState
               icon={MessagesSquare}
-              title="No interviews published yet"
-              description="Interview experiences appear here once they are reviewed and published."
+              title="暂时还没有已发布的面试"
+              description="面试经历通过审核并发布后，会显示在这里。"
             />
           ) : (
             <ul className="grid gap-4 sm:grid-cols-3">
@@ -137,22 +133,24 @@ export default async function HomePage() {
                   <Card className="h-full">
                     <CardHeader>
                       <div className="text-ink-tertiary flex items-center gap-2 text-xs">
-                        <span>{interview.companyName ?? "Unknown company"}</span>
+                        <span>{interview.companyName ?? "未知公司"}</span>
                         <span aria-hidden>·</span>
                         <span>{interview.year}</span>
                       </div>
                       <CardTitle>
-                        {interview.interview_type ?? "Interview"}
+                        {displayEnum(interview.interview_type) ?? "面试"}
                         {interview.location ? ` · ${interview.location}` : ""}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-2">
                         {interview.season ? (
-                          <Badge variant="default">{interview.season}</Badge>
+                          <Badge variant="default">
+                            {displaySeason(interview.season) ?? "未注明季节"}
+                          </Badge>
                         ) : null}
                         <Badge variant="status" tone="published">
-                          Published
+                          已发布
                         </Badge>
                       </div>
                     </CardContent>
@@ -169,18 +167,18 @@ export default async function HomePage() {
         <Container className="py-20">
           <div className="mb-8 flex flex-col gap-1">
             <h2 className="text-title text-ink font-semibold tracking-[-0.02em]">
-              Knowledge categories
+              知识分类
             </h2>
             <p className="text-ink-secondary text-sm">
-              Start from a topic and work through its questions.
+              从一个主题开始，逐步练习相关问题。
             </p>
           </div>
 
           {rootTopics.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              title="No topics yet"
-              description="Topics are created together with the knowledge questions they group."
+              title="暂时还没有主题"
+              description="主题会随着知识题一起创建和归类。"
             />
           ) : (
             <ul className="flex flex-wrap gap-2">
@@ -221,21 +219,20 @@ export default async function HomePage() {
         <Container className="py-20">
           <div className="max-w-2xl">
             <p className="text-ink-tertiary text-xs font-semibold tracking-wide uppercase">
-              Coming next
+              即将推出
             </p>
             <h2 className="text-title text-ink mt-2 font-semibold tracking-[-0.02em]">
               Coding
             </h2>
             <p className="text-ink-secondary mt-3 text-[0.9375rem] leading-relaxed">
-              LeetCode-style exercises built around real robotics and ML constraints:
-              SE(3) transforms, batched control loops, action chunking buffers and
-              inference latency budgets.
+              围绕真实机器人和 ML 约束设计的 LeetCode 风格练习：包括 SE(3)
+              变换、批量控制循环、动作分块缓冲区与推理延迟预算。
             </p>
             <Link
               href="/coding"
               className={`mt-6 ${buttonVariants({ variant: "secondary" })}`}
             >
-              See the coding roadmap
+              查看 Coding 路线图
             </Link>
           </div>
         </Container>

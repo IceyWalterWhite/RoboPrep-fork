@@ -18,10 +18,14 @@ import "server-only";
  */
 
 export type FeatureFlag =
-  | "coding_judge"
-  | "interview_submission"
-  | "llm_ingestion"
-  | "company_trends";
+  "coding_judge" | "interview_submission" | "llm_ingestion" | "company_trends";
+
+export const FEATURE_FLAG_LABELS: Record<FeatureFlag, string> = {
+  coding_judge: "Coding 判题",
+  interview_submission: "面试投稿",
+  llm_ingestion: "LLM 面试解析",
+  company_trends: "公司趋势",
+};
 
 const ENV_KEYS: Record<FeatureFlag, string> = {
   coding_judge: "FLAG_CODING_JUDGE",
@@ -50,7 +54,11 @@ export function getFeatureFlags(): Record<FeatureFlag, boolean> {
 }
 
 /** Feature flag audit for /admin/system (values only, never secrets). */
-export function describeFeatureFlags(): Array<{ flag: FeatureFlag; enabled: boolean; envKey: string }> {
+export function describeFeatureFlags(): Array<{
+  flag: FeatureFlag;
+  enabled: boolean;
+  envKey: string;
+}> {
   return (Object.keys(ENV_KEYS) as FeatureFlag[]).map((flag) => ({
     flag,
     enabled: readFlag(flag),

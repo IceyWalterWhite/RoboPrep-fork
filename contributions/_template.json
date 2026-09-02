@@ -1,0 +1,13 @@
+[
+  {
+    "companyHint": "ByteDance",
+    "positionHint": "Embodied AI Algorithm Intern",
+    "yearHint": 2026,
+    "seasonHint": "spring",
+    "locationHint": "Beijing",
+    "language": "zh-CN",
+    "submissionType": "user_text",
+    "sourceUrl": "",
+    "rawText": "把这里替换成你的完整面试经历。\n\n建议包含:\n- 每一轮的形式(技术面/代码面/研究面)和大致时长\n- 面试官问了哪些具体问题(尽量保留原话)\n- 有没有手写代码题,题目大概是什么\n\nReplace this with your full interview experience: rounds, format, duration, and the actual questions asked. Keep the original wording of questions where possible."
+  }
+]

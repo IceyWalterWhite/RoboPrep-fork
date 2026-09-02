@@ -5,7 +5,10 @@ import { Play, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CODING_FRAMEWORK_LABELS } from "@/lib/coding/constants";
+import {
+  CODING_EVALUATION_MODE_LABELS,
+  CODING_FRAMEWORK_LABELS,
+} from "@/lib/coding/constants";
 import type { PublicEvaluationMetadata } from "@/types/coding";
 import type { PublicMLEvaluationResult } from "@/types/ml-judge";
 
@@ -49,12 +52,12 @@ export function CodingWorkspace({
       });
       const payload = (await response.json()) as MLRunResponse & { error?: string };
       if (!response.ok) {
-        setError(payload.error ?? "The judge could not process this request.");
+        setError(payload.error ?? "判题服务无法处理这次请求。");
         return;
       }
       setResult(payload);
     } catch {
-      setError("The request failed. Check your connection and try again.");
+      setError("请求失败，请检查网络连接后重试。");
     } finally {
       setBusy(null);
     }
@@ -64,7 +67,7 @@ export function CodingWorkspace({
     <div className="flex flex-col gap-4">
       <Card className="overflow-hidden">
         <CardHeader className="bg-surface-muted flex-row items-center justify-between gap-3 py-4">
-          <CardTitle>Python editor</CardTitle>
+          <CardTitle>Python 编辑器</CardTitle>
           <span className="text-ink-tertiary text-xs">{editorHint(evaluation)}</span>
         </CardHeader>
         <CardContent className="p-0">
@@ -72,24 +75,36 @@ export function CodingWorkspace({
           <div className="border-line-subtle flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
             <p className="text-ink-tertiary text-xs">
               {isStructured
-                ? "Run checks the visible examples. Submit runs the full hidden suite."
-                : "Run checks visible examples. Submit checks the full test suite."}
+                ? "运行会检查可见示例，提交会运行完整的隐藏测试。"
+                : "运行会检查可见示例，提交会检查完整测试集。"}
             </p>
             <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={() => execute("run")} disabled={busy !== null}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => execute("run")}
+                disabled={busy !== null}
+              >
                 <Play className="size-3.5" aria-hidden />
-                {busy === "run" ? "Running…" : "Run"}
+                {busy === "run" ? "运行中…" : "运行"}
               </Button>
-              <Button size="sm" onClick={() => execute("submit")} disabled={busy !== null}>
+              <Button
+                size="sm"
+                onClick={() => execute("submit")}
+                disabled={busy !== null}
+              >
                 <Send className="size-3.5" aria-hidden />
-                {busy === "submit" ? "Submitting…" : "Submit"}
+                {busy === "submit" ? "提交中…" : "提交"}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
       {error ? (
-        <p role="alert" className="border-danger/30 bg-danger/10 text-danger-ink rounded-sm border px-4 py-3 text-sm">
+        <p
+          role="alert"
+          className="border-danger/30 bg-danger/10 text-danger-ink rounded-sm border px-4 py-3 text-sm"
+        >
           {error}
         </p>
       ) : null}
@@ -102,7 +117,13 @@ export function CodingWorkspace({
   );
 }
 
-function ResultView({ result, isStructured }: { result: MLRunResponse; isStructured: boolean }) {
+function ResultView({
+  result,
+  isStructured,
+}: {
+  result: MLRunResponse;
+  isStructured: boolean;
+}) {
   if (result.evaluation) {
     return (
       <MLResultPanel
@@ -111,7 +132,7 @@ function ResultView({ result, isStructured }: { result: MLRunResponse; isStructu
         cases={result.evaluation.cases}
         runtimeMs={result.evaluation.runtimeMs}
         entrypointError={result.evaluation.entrypointError}
-        title={result.mode === "program" ? "Submission result" : "Run result"}
+        title={result.mode === "program" ? "提交结果" : "运行结果"}
       />
     );
   }
@@ -130,10 +151,17 @@ function ResultView({ result, isStructured }: { result: MLRunResponse; isStructu
 }
 
 function editorHint(evaluation: PublicEvaluationMetadata): string {
-  if (evaluation.evaluationMode === "program") return "Python 3 · stdin / stdout";
-  const framework = evaluation.framework ? CODING_FRAMEWORK_LABELS[evaluation.framework] : "Python";
-  const entrypoint = evaluation.entrypointName ? ` · ${evaluation.entrypointName}()` : "";
-  return `Python 3 · ${framework} · ${evaluation.evaluationMode}${entrypoint}`;
+  if (evaluation.evaluationMode === "program") return "Python 3 · 标准输入 / 标准输出";
+  const framework = evaluation.framework
+    ? CODING_FRAMEWORK_LABELS[evaluation.framework]
+    : "Python";
+  const entrypoint = evaluation.entrypointName
+    ? ` · ${evaluation.entrypointName}()`
+    : "";
+  const mode =
+    CODING_EVALUATION_MODE_LABELS[evaluation.evaluationMode] ??
+    evaluation.evaluationMode;
+  return `Python 3 · ${framework} · ${mode}${entrypoint}`;
 }
 
 /** Union of both API responses; the discriminating field is `evaluation`. */

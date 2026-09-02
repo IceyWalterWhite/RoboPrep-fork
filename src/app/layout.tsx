@@ -8,11 +8,10 @@ import { getCurrentProfile, getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: {
-    default: "RoboPrep — Master Embodied AI",
+    default: "RoboPrep — 具身智能面试准备",
     template: "%s · RoboPrep",
   },
-  description:
-    "Real interview experiences, essential knowledge, and hands-on coding for Embodied AI roles.",
+  description: "面向具身智能岗位的真实面试经历、核心知识与 Coding 练习。",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +19,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const profile = user ? await getCurrentProfile(user.id) : null;
 
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className="flex min-h-screen flex-col">
         <Navbar
           user={

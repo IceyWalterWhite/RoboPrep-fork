@@ -51,14 +51,14 @@ export function SignInForm({ nextUrl = "/" }: { nextUrl?: string }) {
           htmlFor="signin-email"
           className="text-ink-secondary text-[0.8125rem] font-medium"
         >
-          Email
+          邮箱
         </label>
         <Input
           id="signin-email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="邮箱@example.com"
           value={email}
           invalid={Boolean(errors.email)}
           aria-describedby={errors.email ? "signin-email-error" : undefined}
@@ -76,14 +76,14 @@ export function SignInForm({ nextUrl = "/" }: { nextUrl?: string }) {
           htmlFor="signin-password"
           className="text-ink-secondary text-[0.8125rem] font-medium"
         >
-          Password
+          密码
         </label>
         <Input
           id="signin-password"
           name="password"
           type="password"
           autoComplete="current-password"
-          placeholder="Your password"
+          placeholder="请输入密码"
           value={password}
           invalid={Boolean(errors.password)}
           aria-describedby={errors.password ? "signin-password-error" : undefined}
@@ -106,17 +106,17 @@ export function SignInForm({ nextUrl = "/" }: { nextUrl?: string }) {
         {pending ? (
           <>
             <Loader2 className="size-4 animate-spin" aria-hidden />
-            Signing in
+            登录中
           </>
         ) : (
-          "Sign in"
+          "登录"
         )}
       </Button>
 
       <p className="text-ink-secondary text-center text-sm">
-        New to RoboPrep?{" "}
+        还没有 RoboPrep 账户？{" "}
         <Link href="/sign-up" className="text-accent font-medium hover:underline">
-          Create an account
+          创建账户
         </Link>
       </p>
     </form>

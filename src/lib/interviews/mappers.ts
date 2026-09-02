@@ -16,7 +16,11 @@ import type {
 } from "@/types/interview";
 import type { KnowledgeQuestionSummary } from "@/types/knowledge";
 
-import { calculateInterviewStats, mapSourceMetadata, normalizeInterviewSlug } from "./helpers";
+import {
+  calculateInterviewStats,
+  mapSourceMetadata,
+  normalizeInterviewSlug,
+} from "./helpers";
 
 type CompanyRow = { id: string; name: string; slug: string };
 
@@ -43,7 +47,7 @@ export function mapInterviewSummary(input: {
   return {
     id: interview.id,
     slug: interview.slug ?? fallbackSlug,
-    title: interview.title ?? position?.title ?? interview.interview_type ?? "Interview experience",
+    title: interview.title ?? position?.title ?? interview.interview_type ?? "面试经历",
     company: companyRef,
     position: positionRef,
     year: interview.year,
@@ -82,7 +86,7 @@ export function mapInterviewRound(row: InterviewRoundRow): InterviewRound {
   return {
     id: row.id,
     roundNumber: row.round_number,
-    title: row.title ?? `Round ${row.round_number}`,
+    title: row.title ?? `第 ${row.round_number} 轮`,
     roundType: row.round_type,
     durationMinutes: row.duration_minutes,
     interviewerRole: row.interviewer_role,

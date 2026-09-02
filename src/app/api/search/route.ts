@@ -16,15 +16,24 @@ export async function GET(request: Request): Promise<Response> {
   if (query.length < 2) {
     return Response.json(
       { query, groups: [], total: 0 },
-      { status: 200, headers: { "x-request-id": requestId, "cache-control": "no-store" } },
+      {
+        status: 200,
+        headers: { "x-request-id": requestId, "cache-control": "no-store" },
+      },
     );
   }
 
   const rate = checkRateLimit(`search:${requestId}`, 60, 60_000);
   if (!rate.allowed) {
     return Response.json(
-      { error: "Too many searches. Please slow down." },
-      { status: 429, headers: { "x-request-id": requestId, "Retry-After": String(rate.retryAfterSeconds) } },
+      { error: "搜索次数过多，请稍后再试。" },
+      {
+        status: 429,
+        headers: {
+          "x-request-id": requestId,
+          "Retry-After": String(rate.retryAfterSeconds),
+        },
+      },
     );
   }
 
@@ -38,7 +47,7 @@ export async function GET(request: Request): Promise<Response> {
     // Task 28: no raw DB errors to the client; log scrubbed server-side.
     console.warn(JSON.stringify({ level: "warn", event: "search_failed", requestId }));
     return Response.json(
-      { error: "Search is temporarily unavailable. Please try again." },
+      { error: "搜索暂时不可用，请稍后再试。" },
       { status: 503, headers: { "x-request-id": requestId } },
     );
   }

@@ -13,16 +13,16 @@ export function InterviewSearch({ params }: { params: InterviewSearchParams }) {
       <Input
         name="q"
         defaultValue={params.q ?? ""}
-        placeholder="Search interviews, questions, topics…"
-        aria-label="Search interviews"
-        className="pl-9 pr-20"
+        placeholder="搜索面试、问题和主题…"
+        aria-label="搜索面试"
+        className="pr-20 pl-9"
       />
       {hiddenFilterFields(params)}
       <button
         type="submit"
         className="text-accent hover:text-accent-hover absolute top-1/2 right-3 -translate-y-1/2 text-sm font-medium"
       >
-        Search
+        搜索
       </button>
     </form>
   );
@@ -31,18 +31,28 @@ export function InterviewSearch({ params }: { params: InterviewSearchParams }) {
 export function hiddenFilterFields(params: InterviewSearchParams) {
   return (
     <>
-      {params.company ? <input type="hidden" name="company" value={params.company} /> : null}
-      {params.position ? <input type="hidden" name="position" value={params.position} /> : null}
+      {params.company ? (
+        <input type="hidden" name="company" value={params.company} />
+      ) : null}
+      {params.position ? (
+        <input type="hidden" name="position" value={params.position} />
+      ) : null}
       {params.year ? <input type="hidden" name="year" value={params.year} /> : null}
-      {params.season ? <input type="hidden" name="season" value={params.season} /> : null}
+      {params.season ? (
+        <input type="hidden" name="season" value={params.season} />
+      ) : null}
       {params.experienceLevel ? (
         <input type="hidden" name="experienceLevel" value={params.experienceLevel} />
       ) : null}
       {params.employmentType ? (
         <input type="hidden" name="employmentType" value={params.employmentType} />
       ) : null}
-      {params.difficulty ? <input type="hidden" name="difficulty" value={params.difficulty} /> : null}
-      {params.sort !== "latest" ? <input type="hidden" name="sort" value={params.sort} /> : null}
+      {params.difficulty ? (
+        <input type="hidden" name="difficulty" value={params.difficulty} />
+      ) : null}
+      {params.sort !== "latest" ? (
+        <input type="hidden" name="sort" value={params.sort} />
+      ) : null}
     </>
   );
 }

@@ -1,12 +1,22 @@
 import { serverEnv } from "@/lib/env.server";
 import type { CodingSubmissionStatus } from "@/types/database";
-import type { EvaluationRequest, EvaluationResult, MLEvaluationRequest, MLEvaluationResult } from "@/types/ml-judge";
+import type {
+  EvaluationRequest,
+  EvaluationResult,
+  MLEvaluationRequest,
+  MLEvaluationResult,
+} from "@/types/ml-judge";
 
 import { aggregateSubmissionStatus, isTerminalJudgeStatus } from "@/lib/coding/helpers";
 import { Judge0Adapter } from "./adapters/judge0";
 import { LocalPythonAdapter } from "./adapters/local-python";
 import { LocalMLPythonAdapter, type MLEvaluatorAdapter } from "./adapters/ml-python";
-import type { JudgeAdapter, JudgeCaseInput, JudgeCaseResult, JudgeRequest } from "./types";
+import type {
+  JudgeAdapter,
+  JudgeCaseInput,
+  JudgeCaseResult,
+  JudgeRequest,
+} from "./types";
 
 /**
  * JudgeService (Week 5 Task 5).
@@ -32,9 +42,11 @@ export class JudgeService {
     return this.evaluateML(request);
   }
 
-  private async evaluateProgram(request: Extract<EvaluationRequest, { mode: "program" }>): Promise<EvaluationResult> {
+  private async evaluateProgram(
+    request: Extract<EvaluationRequest, { mode: "program" }>,
+  ): Promise<EvaluationResult> {
     if (!this.adapter) {
-      return unavailableProgram("Judge is not configured. Please try again later.");
+      return unavailableProgram("判题服务未配置，请稍后重试。");
     }
     try {
       const results: JudgeCaseResult[] = [];
@@ -57,7 +69,14 @@ export class JudgeService {
           result = await this.adapter.getResult(submission.token, judgeRequest);
         }
         if (!isTerminalJudgeStatus(result.status)) {
-          result = { status: "internal_error", stdout: null, stderr: null, runtimeMs: null, memoryKb: null, message: "Judge timed out before returning a result." };
+          result = {
+            status: "internal_error",
+            stdout: null,
+            stderr: null,
+            runtimeMs: null,
+            memoryKb: null,
+            message: "判题服务在返回结果前超时。",
+          };
         }
         results.push({ ...result, testCaseId: testCase.id, name: testCase.name });
       }
@@ -80,7 +99,7 @@ export class JudgeService {
       };
     } catch (error) {
       console.error("[judge] provider failure", error);
-      return unavailableProgram("Judge temporarily unavailable. Please try again.");
+      return unavailableProgram("判题服务暂时不可用，请重试。");
     }
   }
 
@@ -95,7 +114,7 @@ export class JudgeService {
         memoryKb: null,
         entrypointError: {
           category: "internal_error",
-          message: "The ML evaluator is not configured for this environment. Please try again later.",
+          message: "当前环境未配置 ML 评估器，请稍后重试。",
         },
       };
     }
@@ -112,7 +131,7 @@ export class JudgeService {
         memoryKb: null,
         entrypointError: {
           category: "internal_error",
-          message: "The ML evaluator temporarily failed. Please try again.",
+          message: "ML 评估器暂时失败，请重试。",
         },
       };
     }
@@ -140,7 +159,12 @@ function weightedScore(
   const totalWeight = cases.reduce((sum, testCase) => sum + testCase.weight, 0);
   if (totalWeight <= 0) return 0;
   const passedWeight = cases.reduce(
-    (sum, testCase) => sum + (results.find((result) => result.testCaseId === testCase.id)?.status === "accepted" ? testCase.weight : 0),
+    (sum, testCase) =>
+      sum +
+      (results.find((result) => result.testCaseId === testCase.id)?.status ===
+      "accepted"
+        ? testCase.weight
+        : 0),
     0,
   );
   return Math.round((passedWeight / totalWeight) * 10000) / 100;
@@ -160,7 +184,8 @@ export function createJudgeService(): JudgeService {
         : null;
   // ML evaluation runs in a local child process for development. Production
   // must plug in an isolated evaluator before enabling function/class problems.
-  const mlAdapter = process.env.NODE_ENV !== "production" ? new LocalMLPythonAdapter() : null;
+  const mlAdapter =
+    process.env.NODE_ENV !== "production" ? new LocalMLPythonAdapter() : null;
   return new JudgeService(programAdapter, mlAdapter);
 }
 
@@ -172,7 +197,13 @@ export async function judgeCases(
   service: JudgeService,
   definition: Omit<JudgeRequest, "stdin" | "expectedOutput">,
   cases: JudgeCaseInput[],
-): Promise<{ status: CodingSubmissionStatus; score: number; runtimeMs: number | null; memoryKb: number | null; cases: JudgeCaseResult[] }> {
+): Promise<{
+  status: CodingSubmissionStatus;
+  score: number;
+  runtimeMs: number | null;
+  memoryKb: number | null;
+  cases: JudgeCaseResult[];
+}> {
   const result = await service.evaluate({
     mode: "program",
     sourceCode: definition.sourceCode,
@@ -189,7 +220,7 @@ export async function judgeCases(
     tolerance: definition.tolerance,
   });
   if (result.mode !== "program") {
-    throw new Error("unexpected evaluation mode");
+    throw new Error("评测模式不符合预期");
   }
   return {
     status: result.status,

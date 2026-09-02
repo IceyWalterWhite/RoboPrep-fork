@@ -22,6 +22,7 @@
     "refresh:companies": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/refresh-company-stats.ts",
     "recover:jobs": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/recover-stuck-jobs.ts",
     "smoke:prod": "node --experimental-strip-types scripts/production-smoke-test.ts",
+    "import:contributions": "node --experimental-strip-types --loader ./scripts/tests/loader.mjs scripts/import-contributions.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

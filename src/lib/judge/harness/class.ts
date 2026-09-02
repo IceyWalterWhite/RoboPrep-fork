@@ -12,10 +12,10 @@ def resolve_entrypoint(module, name):
     target = getattr(module, name, None)
     if target is None:
         return None, {"category": "entrypoint_missing",
-                      "message": "Expected class '%s', but no class with that name was found." % name}
+                      "message": "未找到名为 '%s' 的类。" % name}
     if not (isinstance(target, type) and callable(target)):
         return None, {"category": "entrypoint_not_callable",
-                      "message": "'%s' exists but is not a class." % name}
+                      "message": "'%s' 存在，但不是类。" % name}
     return target, None
 
 
@@ -33,7 +33,7 @@ def signature_probe(target, payload):
         return None
     except TypeError:
         return {"category": "entrypoint_signature",
-                "message": "The class constructor does not accept the expected arguments. Check the signature in the starter code."}
+                "message": "类构造函数不接受预期参数，请检查起始代码中的函数签名。"}
 
 
 def invoke_case(entrypoint, case):
@@ -45,13 +45,13 @@ def invoke_case(entrypoint, case):
     except Exception as exc:  # noqa: BLE001
         return {"callable": None, "args": [], "kwargs": {}, "instance": None, "handles": [],
                 "error": {"category": "runtime_error",
-                          "message": "Constructing %s failed: %s: %s" % (getattr(entrypoint, "__name__", "?"), type(exc).__name__, str(exc)[:200])}}
+                          "message": "构造 %s 失败：%s：%s" % (getattr(entrypoint, "__name__", "?"), type(exc).__name__, str(exc)[:200])}}
     method_name = case.get("method") or "forward"
     method = getattr(instance, method_name, None)
     if method is None or not callable(method):
         return {"callable": None, "args": [], "kwargs": {}, "instance": None, "handles": [],
                 "error": {"category": "entrypoint_missing",
-                          "message": "The instance has no callable method '%s'." % method_name}}
+                          "message": "实例没有名为 '%s' 的可调用方法。" % method_name}}
     args = [build_value(value, FRAMEWORK) for value in case.get("args", [])]
     kwargs = {key: build_value(value, FRAMEWORK) for key, value in case.get("kwargs", {}).items()}
     handles = []

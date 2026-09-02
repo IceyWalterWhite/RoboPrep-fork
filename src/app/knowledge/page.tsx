@@ -21,8 +21,8 @@ import { getKnowledgeQuestions, getKnowledgeTopics } from "@/lib/knowledge/queri
 import type { KnowledgeFilterParams } from "@/lib/knowledge/filters";
 
 export const metadata: Metadata = {
-  title: "Knowledge",
-  description: "Core questions for Embodied AI interviews.",
+  title: "知识库",
+  description: "具身智能面试中的核心问题。",
 };
 
 export default async function KnowledgePage({
@@ -43,8 +43,8 @@ export default async function KnowledgePage({
   return (
     <Container className="py-14">
       <PageHeader
-        title="Knowledge"
-        description="Canonical answers for the concepts that recur in Embodied AI interviews."
+        title="知识库"
+        description="为具身智能面试中反复出现的概念提供标准答案。"
       >
         <KnowledgeSearch params={params} />
       </PageHeader>
@@ -60,12 +60,8 @@ export default async function KnowledgePage({
             }))}
           />
           <div className="mt-6 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-ink text-lg font-semibold tracking-[-0.01em]">
-              Questions
-            </h2>
-            <p className="text-ink-tertiary text-sm">
-              {questions.total} question{questions.total === 1 ? "" : "s"}
-            </p>
+            <h2 className="text-ink text-lg font-semibold tracking-[-0.01em]">问题</h2>
+            <p className="text-ink-tertiary text-sm">共 {questions.total} 个问题</p>
           </div>
 
           {questions.items.length === 0 ? (
@@ -73,18 +69,16 @@ export default async function KnowledgePage({
               className="mt-4"
               icon={BookOpen}
               title={
-                questions.total === 0
-                  ? "No questions match these filters"
-                  : "No questions on this page"
+                questions.total === 0 ? "没有符合筛选条件的问题" : "这一页暂时没有问题"
               }
-              description="Clear a filter or try a different search term, topic, company, or difficulty."
+              description="清除筛选条件，或尝试其他搜索词、主题、公司或难度。"
               action={
                 hasFilters(params) ? (
                   <Link
                     href="/knowledge"
                     className="text-accent hover:text-accent-hover text-sm font-medium"
                   >
-                    Clear filters
+                    清除筛选
                   </Link>
                 ) : undefined
               }
@@ -128,8 +122,7 @@ export default async function KnowledgePage({
                         ) : null}
                         {question.stats ? (
                           <p className="text-ink-tertiary mt-auto text-xs">
-                            Seen in {question.stats.interviewCount} interview
-                            {question.stats.interviewCount === 1 ? "" : "s"}
+                            出现在 {question.stats.interviewCount} 条面试记录中
                           </p>
                         ) : null}
                       </CardContent>
@@ -158,7 +151,7 @@ export default async function KnowledgePage({
               id="knowledge-topics-heading"
               className="text-ink text-sm font-semibold tracking-wide uppercase"
             >
-              Browse topics
+              浏览主题
             </h2>
             <ul className="mt-3 flex flex-wrap gap-2 lg:flex-col lg:items-start">
               {topics
@@ -193,12 +186,12 @@ function KnowledgeSearch({ params }: { params: KnowledgeFilterParams }) {
       <Input
         name="q"
         defaultValue={params.q ?? ""}
-        placeholder="Search questions, topics…"
-        aria-label="Search knowledge questions"
+        placeholder="搜索问题和主题…"
+        aria-label="搜索知识库问题"
       />
       {hiddenSearchFields(params)}
       <Button type="submit" size="sm">
-        Search
+        搜索
       </Button>
     </form>
   );
@@ -223,13 +216,13 @@ function KnowledgeFilters({
         {params.q ? <input type="hidden" name="q" value={params.q} /> : null}
         <FilterSelect
           name="topic"
-          label="Topic"
+          label="主题"
           value={params.topic}
           options={topicOptions}
         />
         <FilterSelect
           name="difficulty"
-          label="Difficulty"
+          label="难度"
           value={params.difficulty}
           options={Object.entries(DIFFICULTY_LABELS).map(([value, label]) => ({
             value,
@@ -238,7 +231,7 @@ function KnowledgeFilters({
         />
         <FilterSelect
           name="type"
-          label="Question type"
+          label="问题类型"
           value={params.type}
           options={Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => ({
             value,
@@ -247,13 +240,13 @@ function KnowledgeFilters({
         />
         <FilterSelect
           name="company"
-          label="Company"
+          label="公司"
           value={params.company}
           options={companyOptions}
         />
         <FilterSelect
           name="sort"
-          label="Sort"
+          label="排序"
           value={params.sort}
           options={Object.entries(KNOWLEDGE_SORT_LABELS).map(([value, label]) => ({
             value,
@@ -262,19 +255,19 @@ function KnowledgeFilters({
         />
         <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
           <Button type="submit" size="sm">
-            Apply filters
+            应用筛选
           </Button>
           <Link
             href="/knowledge"
             className={buttonVariants({ variant: "ghost", size: "sm" })}
           >
-            Clear all
+            全部清除
           </Link>
         </div>
       </form>
       {params.topic ? (
         <p className="text-ink-tertiary mt-3 text-xs">
-          Active topic: <span className="text-ink-secondary">{params.topic}</span>
+          当前主题：<span className="text-ink-secondary">{params.topic}</span>
         </p>
       ) : null}
     </div>
@@ -300,7 +293,7 @@ function FilterSelect({
         defaultValue={value ?? ""}
         className="bg-surface text-ink border-line focus:outline-accent h-10 rounded-sm border px-3 text-sm focus:outline-2"
       >
-        <option value="">All</option>
+        <option value="">全部</option>
         {options.map((option) => (
           <option key={`${name}-${option.value}`} value={option.value}>
             {option.label}
